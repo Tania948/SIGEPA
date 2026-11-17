@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="acceso">
+    <div class="acceso__imagen">
+      <img class="acceso__foto-parcial" src="assets/img/cocina-mexicana.jpg" alt="Manos de una cocinera tradicional preparando tortillas junto al comal">
+      <div class="acceso__mensaje">
+        <p class="eyebrow eyebrow--dorado">COCINAR TAMBIÉN ES RECORDAR</p>
+        <h2>Cada receta tiene un lugar. Y una historia que contar.</h2>
+        <p>Forma parte de una memoria gastronómica que se construye en comunidad.</p>
+      </div>
+    </div>
+
+    <form class="acceso__formulario" data-form novalidate>
+      <p class="eyebrow">TU HISTORIA TIENE UN LUGAR AQUÍ</p>
+      <h1 class="titulo-lg">Súmate a nuestra mesa.</h1>
+      <p class="texto">Crea tu cuenta para guardar recetas y compartir los saberes de tu cocina. Los campos con * son obligatorios.</p>
+      <div class="alerta" role="alert" hidden data-alerta></div>
+      <div class="acceso__campos" style="gap:22px">
+        <div class="campo">
+          <label for="nombre">Nombre completo *</label>
+          <div class="entrada"><input id="nombre" name="nombreCompleto" autocomplete="name" placeholder="Ana López" required maxlength="60"></div>
+          <p class="ayuda">Así aparecerá tu nombre al publicar una receta. Escribe tu nombre y al menos un apellido.</p>
+        </div>
+        <div class="campo">
+          <label for="email">Correo electrónico *</label>
+          <div class="entrada"><input id="email" name="email" type="email" autocomplete="email" placeholder="ana.lopez@correo.mx" required maxlength="40"></div>
+        </div>
+        <div class="campo">
+          <label for="contrasenia">Contraseña *</label>
+          <div class="entrada">
+            <input id="contrasenia" name="contrasenia" type="password" autocomplete="new-password" required>
+            <button class="btn-icono" type="button" data-ver-contrasenia="contrasenia" aria-label="Mostrar contraseña"><i data-icon="eye"></i></button>
+          </div>
+          <p class="requisitos" data-requisitos>
+            <span class="requisito" data-req="largo"><i data-icon="check" data-size="13"></i>8 caracteres o más</span>
+            <span class="requisito" data-req="mezcla"><i data-icon="check" data-size="13"></i>Una letra y un número</span>
+          </p>
+        </div>
+        <div class="campo">
+          <label for="confirmar">Confirma tu contraseña *</label>
+          <div class="entrada">
+            <input id="confirmar" name="confirmar" type="password" autocomplete="new-password" required>
+            <button class="btn-icono" type="button" data-ver-contrasenia="confirmar" aria-label="Mostrar contraseña"><i data-icon="eye-off"></i></button>
+          </div>
+        </div>
+        <label class="casilla"><input type="checkbox" name="terminos"> Acepto los <a class="enlace-plano" style="font-size:13px" href="sobre.html#terminos" target="_blank">Términos de uso</a> y el <a class="enlace-plano" style="font-size:13px" href="sobre.html#privacidad" target="_blank">Aviso de privacidad</a>.</label>
+        <div><button class="btn btn--primario" type="submit"><i data-icon="arrow-right"></i>Crear mi cuenta</button></div>
+      </div>
+      <hr class="separador">
+      <p class="acceso__alterno">¿Ya tienes una cuenta? <a href="login.html" data-login>Inicia sesión →</a></p>
+    </form>
+  </main>
+
+  <script type="module">
+    import { api, sesion, parametro } from "./js/api.js";
+    import { montarLayout } from "./js/layout.js";
+    import { mostrarAlerta } from "./js/componentes.js";
+    import { activarRequisitos, activarVerContrasenia, destinoSeguro, revisarContrasenia } from "./js/formularios.js";
+
+    montarLayout();
+    activarVerContrasenia();
+    const volver = destinoSeguro(parametro("volver"));
+    if (sesion.activa) location.replace(volver);
+    document.querySelector("[data-login]").href = `login.html${location.search}`;
+    const form = document.querySelector("[data-form]");
+    const alerta = document.querySelector("[data-alerta]");
+    activarRequisitos(form.contrasenia, document.querySelector("[data-requisitos]"));
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(form));
+      const req = revisarContrasenia(d.contrasenia);
+      if (d.nombreCompleto.trim().split(/\s+/).length < 2) return mostrarAlerta(alerta, "Escribe tu nombre y al menos un apellido.");
+      if (!form.email.checkValidity()) return mostrarAlerta(alerta, "Escribe un correo electrónico válido.");
+      if (!req.largo || !req.mezcla) return mostrarAlerta(alerta, "Tu contraseña necesita 8 caracteres o más, con al menos una letra y un número.");
+      if (d.contrasenia !== d.confirmar) return mostrarAlerta(alerta, "Las contraseñas no coinciden.");
+      if (!form.terminos.checked) return mostrarAlerta(alerta, "Para crear tu cuenta, acepta los Términos de uso y el Aviso de privacidad.");
+      const btn = form.querySelector("[type=submit]");
+      btn.disabled = true;
+      try {
+        const r = await api("/auth/registro", { metodo: "POST", cuerpo: { nombreCompleto: d.nombreCompleto.trim(), email: d.email.trim(), contrasenia: d.contrasenia } });
+        sesion.guardar(r, true);
+        location.href = volver === "index.html" ? "mi-perfil.html" : volver;
+      } catch (err) {
+        mostrarAlerta(alerta, err.message);
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

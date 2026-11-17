@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sobre el proyecto · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina" style="gap:42px">
+    <div data-ruta></div>
+
+    <section class="sobre-hero">
+      <div class="sobre-hero__texto">
+        <p class="eyebrow">CONOCER, COMPARTIR Y CONSERVAR</p>
+        <h1>Un mapa de sabores. Una memoria compartida.</h1>
+        <p class="lead">SIGEPA es el Sistema Georreferenciado y Participativo para la Preservación y Sustentabilidad del Patrimonio Gastronómico Mexicano.</p>
+        <p class="texto">Un espacio para acercarnos a las cocinas de México desde sus lugares y sus personas. Reunimos recetas compartidas por la comunidad, con ingredientes, instrucciones e historias que pueden seguir vivas en otras mesas.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn btn--primario" href="index.html"><i data-icon="map"></i>Explorar México</a>
+          <a class="btn btn--secundario" href="publicar.html">Compartir una receta</a>
+        </div>
+      </div>
+      <figure>
+        <img src="assets/img/preparar-en-comunidad.jpg" alt="Dos cocineras de distintas generaciones preparando tortillas en una cocina tradicional">
+        <figcaption>Los saberes se transmiten al cocinar y compartir.</figcaption>
+      </figure>
+    </section>
+
+    <hr class="separador">
+
+    <section style="display:flex;flex-direction:column;gap:30px">
+      <h2 class="titulo-md" style="font-size:34px">Lo que da sentido al proyecto</h2>
+      <div class="principios">
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="map-pinned" data-size="24"></i></span>
+          <h3>El territorio da contexto</h3>
+          <p>Una receta no existe aislada. El clima, los ingredientes disponibles y la vida de cada localidad ayudan a comprender lo que llega a la mesa.</p>
+        </article>
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="users-round" data-size="24"></i></span>
+          <h3>La comunidad tiene la voz</h3>
+          <p>Quienes cocinan comparten sus propias versiones, historias y maneras de nombrar los ingredientes. La diversidad es parte de esta memoria.</p>
+        </article>
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="sprout" data-size="24"></i></span>
+          <h3>Conservar también es cuidar</h3>
+          <p>Reconocer los productos de temporada, aprovechar los ingredientes y respetar los saberes locales abre una conversación sobre el futuro de nuestra cocina.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="participar">
+      <div class="participar__intro">
+        <p class="eyebrow">UNA MEMORIA EN MOVIMIENTO</p>
+        <h2>Hay muchas formas de ser parte.</h2>
+        <p class="texto" style="font-size:15px">Puedes comenzar con una búsqueda o con esa receta que siempre preparan en casa.</p>
+      </div>
+      <ol class="recorrido">
+        <li><span class="recorrido__num">01</span><div><h3>Explora</h3><p>Elige un estado en el mapa o busca por platillo e ingredientes. Conoce quién comparte cada receta y el lugar de donde viene.</p><a href="index.html">Ir a explorar México →</a></div></li>
+        <li><span class="recorrido__num">02</span><div><h3>Aporta</h3><p>Crea una cuenta y publica una receta con tus fotos, cantidades, pasos y ubicación. Reconoce a quienes te enseñaron.</p><a href="publicar.html">Publicar una receta →</a></div></li>
+        <li><span class="recorrido__num">03</span><div><h3>Conserva</h3><p>Guarda tus favoritas, llévalas a tu cocina y conversa sobre ellas. Respetar el contexto también es una forma de preservar.</p><a href="mi-perfil.html?pestana=favoritos">Ver mis favoritos →</a></div></li>
+      </ol>
+    </section>
+
+    <section class="compromiso">
+      <div>
+        <h2>No hay una sola manera de cocinar México.</h2>
+        <p>Las preparaciones cambian entre regiones, comunidades y familias. SIGEPA busca dar espacio a esas voces, sin presentar una versión como la única auténtica. Cada aporte conserva su autoría y debe compartirse con permiso y respeto.</p>
+      </div>
+      <div class="compromiso__invitacion" data-invitacion>
+        <h3>Tu historia también alimenta este mapa.</h3>
+        <a class="btn btn--secundario" href="registro.html">Crear mi cuenta</a>
+      </div>
+    </section>
+
+    <section class="legal">
+      <section class="panel" id="terminos">
+        <h2>Términos de uso</h2>
+        <p>Al publicar una receta confirmas que el texto y las fotografías son tuyos o que tienes permiso para compartirlos. Cada aporte conserva la autoría de quien lo comparte. El equipo de SIGEPA revisa las recetas antes de mostrarlas en el mapa y puede ocultar comentarios o contenidos que no respeten a la comunidad.</p>
+      </section>
+      <section class="panel" id="privacidad">
+        <h2>Aviso de privacidad</h2>
+        <p>Guardamos tu nombre, tu correo y tu contraseña cifrada para administrar tu cuenta. Tu correo no se muestra a otras personas. La ubicación de una receta corresponde a la localidad de origen, nunca a un domicilio. Tus favoritos y borradores se guardan solo en tu navegador.</p>
+      </section>
+    </section>
+  </main>
+
+  <script type="module">
+    import { sesion } from "./js/api.js";
+    import { montarLayout, ruta } from "./js/layout.js";
+    montarLayout("sobre");
+    document.querySelector("[data-ruta]").outerHTML = ruta([["Inicio", "index.html"], ["Sobre el proyecto"]]);
+    if (sesion.activa) {
+      document.querySelector("[data-invitacion] a").href = "publicar.html";
+      document.querySelector("[data-invitacion] a").textContent = "Publicar una receta";
+    }
+  </script>
+</body>
+</html>

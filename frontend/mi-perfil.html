@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi perfil · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina" style="gap:30px">
+    <div data-ruta></div>
+
+    <section class="panel perfil-card">
+      <span data-avatar></span>
+      <div class="perfil-card__datos">
+        <p class="eyebrow">MI ESPACIO EN SIGEPA</p>
+        <h1 data-nombre></h1>
+        <p class="perfil-card__lugar" data-lugar hidden></p>
+        <p class="perfil-card__correo" data-correo></p>
+      </div>
+      <button class="btn btn--secundario" type="button" data-editar><i data-icon="pencil"></i>Editar perfil</button>
+    </section>
+
+    <nav class="pestanas" aria-label="Mi perfil">
+      <a href="mi-perfil.html" data-pestana="recetas">Mis recetas <span data-n-recetas></span></a>
+      <a href="mi-perfil.html?pestana=favoritos" data-pestana="favoritos">Favoritos <span data-n-favoritos></span></a>
+    </nav>
+
+    <!-- Mis aportes -->
+    <section data-vista="recetas" class="vista" hidden>
+      <div class="coleccion-encabezado">
+        <div>
+          <h2 class="titulo-lg">Mis aportes</h2>
+          <p class="texto">Aquí viven tus recetas publicadas y las historias que aún estás preparando.</p>
+        </div>
+        <a class="btn btn--primario" href="publicar.html"><i data-icon="plus"></i>Publicar receta</a>
+      </div>
+      <div class="barra-filtros" data-filtro-aportes></div>
+      <div class="rejilla-recetas" data-mis-recetas></div>
+      <div data-banda-borrador></div>
+    </section>
+
+    <!-- Favoritos -->
+    <section data-vista="favoritos" class="vista" hidden>
+      <div class="coleccion-encabezado">
+        <div>
+          <h2 class="titulo-lg">Sabores para volver.</h2>
+          <p class="texto">Tus recetas guardadas, reunidas para la próxima vez que quieras cocinar.</p>
+        </div>
+        <p class="contador-linea"><i data-icon="bookmark-check" data-size="20"></i><span data-total-fav></span></p>
+      </div>
+      <div class="barra-filtros">
+        <span data-filtro-estado></span><span data-filtro-tipo></span>
+        <p class="texto-xs">Usa el marcador o “Quitar de favoritos” para retirar una receta de tu colección.</p>
+        <span data-orden-fav></span>
+      </div>
+      <div class="rejilla-recetas" data-favoritos></div>
+      <section class="banda banda--verde">
+        <div class="banda__mensaje"><div><h2>Siempre hay otro lugar que descubrir.</h2></div></div>
+        <a class="enlace" href="index.html">Volver a explorar México →</a>
+      </section>
+    </section>
+
+    <dialog class="dialogo" data-dialogo>
+      <form method="dialog" data-form-perfil novalidate>
+        <h2 class="titulo-md">Editar perfil</h2>
+        <div class="alerta" hidden data-alerta-perfil></div>
+        <div class="campo"><label for="p-nombre">Nombre</label><div class="entrada"><input id="p-nombre" name="nombre" maxlength="20" required></div></div>
+        <div class="dos-columnas">
+          <div class="campo"><label for="p-apPat">Apellido paterno</label><div class="entrada"><input id="p-apPat" name="apPat" maxlength="20" required></div></div>
+          <div class="campo"><label for="p-apMat">Apellido materno</label><div class="entrada"><input id="p-apMat" name="apMat" maxlength="20"></div></div>
+        </div>
+        <div class="campo"><label for="p-email">Correo electrónico</label><div class="entrada"><input id="p-email" name="email" type="email" maxlength="40" required></div></div>
+        <div class="dialogo__acciones">
+          <button class="btn btn--secundario" type="button" data-cancelar>Cancelar</button>
+          <button class="btn btn--primario" type="submit" value="guardar">Guardar cambios</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script type="module" src="js/mi-perfil.js"></script>
+</body>
+</html>

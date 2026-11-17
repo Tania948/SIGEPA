@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explorar México · SIGEPA MX</title>
+  <meta name="description" content="Un atlas vivo de la cocina mexicana: recetas, lugares y saberes compartidos por sus comunidades.">
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor inicio">
+    <section class="bienvenida" aria-labelledby="titulo-inicio">
+      <div class="bienvenida__intro">
+        <p class="eyebrow">UN ATLAS VIVO DE NUESTRA COCINA</p>
+        <h1 class="titulo-xl" id="titulo-inicio">México se cuenta a través de su mesa.</h1>
+        <p class="texto">Explora recetas, lugares y saberes compartidos por quienes los mantienen vivos.</p>
+      </div>
+      <div class="bienvenida__busqueda">
+        <form class="buscador" action="recetas.html" role="search">
+          <i data-icon="search" data-size="20"></i>
+          <label class="sr-only" for="q">Busca un platillo o ingredientes</label>
+          <input id="q" name="q" type="search" placeholder="Busca un platillo o ingredientes" autocomplete="off">
+          <button class="btn btn--primario" type="submit">Buscar recetas</button>
+        </form>
+        <div class="buscador__accesos">
+          <p>Prueba:
+            <button class="sugerencia" type="button" data-sugerencia="mole">mole</button>,
+            <button class="sugerencia" type="button" data-sugerencia="maíz">maíz</button>,
+            <button class="sugerencia" type="button" data-sugerencia="flor de calabaza">flor de calabaza</button>
+          </p>
+          <a class="enlace" href="busqueda.html">Búsqueda avanzada →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="territorio" id="territorio" aria-labelledby="titulo-territorio">
+      <div class="seccion-encabezado">
+        <h2 class="titulo-md" id="titulo-territorio">Un territorio, muchas cocinas</h2>
+        <a class="enlace" href="#estado-select" data-ver-estados>Ver todos los estados →</a>
+      </div>
+      <div class="atlas">
+        <div class="atlas__mapa">
+          <div class="mapa" data-mapa>
+            <div class="mapa__lienzo" data-lienzo></div>
+            <div class="mapa__seleccion" data-seleccion hidden></div>
+            <div class="mapa__tooltip" data-tooltip hidden></div>
+            <div class="mapa__controles">
+              <button type="button" aria-label="Acercar" data-zoom="1">＋</button>
+              <button type="button" aria-label="Alejar" data-zoom="-1">−</button>
+            </div>
+            <p class="mapa__escala">0 ━━━━━ 500 km</p>
+          </div>
+          <div class="leyenda">
+            <span class="leyenda__item"><span class="leyenda__muestra" style="background:var(--c-mapa-estado)"></span>Estados de México</span>
+            <span class="leyenda__item"><span class="leyenda__muestra" style="background:var(--c-terracota)"></span>Estado seleccionado</span>
+            <span>Selecciona un estado para explorar</span>
+          </div>
+        </div>
+
+        <div class="atlas__estado" aria-live="polite">
+          <div class="campo">
+            <label for="estado-select">Explorar un estado</label>
+            <div class="entrada">
+              <select id="estado-select" data-estado-select></select>
+              <i data-icon="chevron-down"></i>
+            </div>
+          </div>
+          <p class="eyebrow" data-zona></p>
+          <h3 class="titulo-estado" data-nombre-estado></h3>
+          <p class="texto" data-descripcion></p>
+          <div class="chips" data-regiones></div>
+          <a class="btn btn--primario" href="#" data-explorar><i data-icon="arrow-up-right"></i><span></span></a>
+          <p class="texto-xs" style="line-height:1.6">Cada receta conserva su lugar de origen y la voz de quien la comparte.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="territorio" aria-labelledby="titulo-destacadas" style="gap:22px">
+      <div class="seccion-encabezado">
+        <h2 class="titulo-md" id="titulo-destacadas">De Oaxaca a tu cocina</h2>
+        <a class="enlace" href="recetas.html" data-ver-recetas>Ver todas las recetas →</a>
+      </div>
+      <div class="rejilla-recetas" data-destacadas></div>
+    </section>
+
+    <section class="invitacion">
+      <div class="invitacion__mensaje">
+        <i data-icon="sprout" data-size="28"></i>
+        <div>
+          <h2>Tu receta también es parte del mapa.</h2>
+          <p>Comparte los sabores y las historias de tu comunidad.</p>
+        </div>
+      </div>
+      <a class="btn btn--secundario" href="publicar.html">Publicar una receta</a>
+    </section>
+  </main>
+
+  <script type="module" src="js/inicio.js"></script>
+</body>
+</html>
