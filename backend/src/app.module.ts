@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
+import { AsistenteModule } from './asistente/asistente';
 import { AuthModule } from './auth/auth';
 import { ComunidadModule, UPLOADS_DIR } from './common/modulos';
 import { ENTITIES } from './entities';
@@ -32,7 +33,7 @@ import { RecetasModule } from './recetas/recetas';
       { rootPath: UPLOADS_DIR, serveRoot: '/uploads' },
       { rootPath: join(__dirname, '..', '..', 'frontend'), exclude: ['/api/(.*)'] },
     ),
-    AuthModule, RecetasModule, ComunidadModule,
+    AuthModule, RecetasModule, ComunidadModule, AsistenteModule,
   ],
 })
 export class AppModule {}

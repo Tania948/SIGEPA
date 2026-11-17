@@ -223,6 +223,10 @@ const FRASES = [
   ["Soy portador o portadora de saberes", "Teen u kanáantmaj ojéelo'ob", "Nehwatl nitlamatini"],
   ["Marca la localidad en el mapa", "Ts'áa u chíikul le kaaj ti' le mapa'", "Xikmachioti in kalpolli ipan in mapa"],
   ["Ingresar", "Ookol", "Xikalaki"],
+  ["Asistente", "Áantaj", "Tlapalewiani"],
+  ["Asistente SIGEPA", "U áantajil SIGEPA", "Itlapalewiani SIGEPA"],
+  ["Recetas, presupuesto e ingredientes con el mapa", "Janalo'ob, taak'in yéetel u nu'ukulil ti' le mapa'", "Tlakualli, tomin wan tlen monekis ipan in mapa"],
+  ["Precios aproximados de referencia. Recolecta con permiso y sin dañar las plantas.", "Le tojolo'oba' chéen ku na'atal. Ch'a' yéetel u cha'abil, ma' a k'askúuntik le xíiwo'obo'.", "Tlapatiotl san ken nesi. Xikuika ika tlanawatilli wan amo xikitlakalti in xiwitl."],
 ];
 
 const AVISO = {

@@ -426,7 +426,7 @@ INSERT INTO receta (idUsuario, idEstado, nombreReceta, descripcion, ingredientes
   'validada', NULL, NOW() - INTERVAL 442 HOUR),
  (15, 1, 'Pollo San Marcos',
   'Pollo frito con papas y chorizo en salsa, servido en la Feria de San Marcos.',
-  '[{"cantidad": "1", "unidad": "pieza", "nombre": "pollo en piezas"}, {"cantidad": "3", "unidad": "piezas", "nombre": "papas"}, {"cantidad": "200", "unidad": "g", "nombre": "chorizo"}, {"cantidad": "2", "unidad": "piezas", "nombre": "jitomates"}]',
+  '[{"cantidad": "1.5", "unidad": "kg", "nombre": "pollo en piezas"}, {"cantidad": "3", "unidad": "piezas", "nombre": "papas"}, {"cantidad": "200", "unidad": "g", "nombre": "chorizo"}, {"cantidad": "2", "unidad": "piezas", "nombre": "jitomates"}]',
   '{"pasos": [{"titulo": "Cuece", "texto": "Cuece el pollo y dóralo."}, {"titulo": "Prepara", "texto": "Fríe papa y chorizo."}, {"titulo": "Sirve", "texto": "Sirve todo con salsa de jitomate."}], "porciones": 6, "tiempoTotal": 90, "dificultad": "Intermedia", "tipoPlatillo": "Plato fuerte", "localidad": "Aguascalientes", "municipio": "Aguascalientes", "cveMun": "01001", "latitud": 21.8818, "longitud": -102.2916}',
   'validada', NULL, NOW() - INTERVAL 451 HOUR),
  (16, 29, 'Tlatlapas',

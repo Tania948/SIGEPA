@@ -58,10 +58,27 @@ la contraseña aparece en la consola donde corre `npm start`.
 
 ## Mapa
 
-El mapa usa **Leaflet** (incluido en `frontend/vendor`) con dos fondos de mapa: OpenStreetMap/CARTO y una vista
-satelital de Esri. Las fronteras de los **32 estados y 2,475 municipios** vienen del Marco Geoestadístico de
+El mapa usa **Leaflet** (incluido en `frontend/vendor`) con fondos de mapa que no piden llave de API:
+OpenStreetMap (si no responde, cambia solo a las calles de Esri) y una vista satelital de Esri. Las fronteras de los **32 estados y 2,475 municipios** vienen del Marco Geoestadístico de
 INEGI (versión publicada por CONABIO), simplificadas a TopoJSON en `frontend/assets/mapa/`. Los municipios de cada
 estado se cargan solo cuando se elige ese estado. Los fondos de mapa necesitan internet; las fronteras no.
+
+## Asistente
+
+El botón **Asistente** (abajo a la derecha, en todas las pantallas) abre un chat que responde con datos de SIGEPA y
+los muestra en un mapa pequeño:
+
+- **Presupuesto:** "tengo 200 pesos para 4 personas" → recetas que alcanzan, la que mejor aprovecha el dinero y su
+  lista de compras con costo estimado.
+- **Origen y recolección:** "¿dónde se recolecta la hierba santa?", "¿qué se recolecta en Oaxaca en esta temporada?"
+  → estados resaltados en el mapa, temporada y recomendaciones para recolectar de forma responsable.
+- **Recetas:** por estado, ingrediente, tipo de platillo o tiempo ("recetas rápidas de Yucatán").
+
+Los precios y el origen de los ingredientes están en `backend/src/asistente/ingredientes.ts`. Los precios son
+**referencias aproximadas** basadas en los monitoreos de Profeco y el SNIIM de 2026. Hay que actualizarlos de vez en cuando.
+
+Funciona sin servicios externos. Si en `backend/.env` pones `ANTHROPIC_API_KEY`, además redacta las respuestas con
+Claude usando solo esos mismos datos. Si la llamada falla, responde con el texto local.
 
 ## Idiomas
 
@@ -88,6 +105,7 @@ El contenido de las recetas no se traduce: se muestra en la lengua en que lo esc
 | GET | `/api/recetas/pendientes` | Recetas por validar (administrador) |
 | PATCH | `/api/recetas/:id/validacion` | Validar o rechazar (administrador) |
 | GET / POST | `/api/recetas/:id/comentarios` | Comentarios |
+| POST | `/api/asistente` | Pregunta al asistente (`{ mensaje, historial? }`) |
 | GET | `/api/usuarios/:id` | Perfil público |
 | GET | `/api/usuarios/yo/recetas` | Mis aportes |
 | PATCH | `/api/usuarios/yo` | Editar mi perfil |
