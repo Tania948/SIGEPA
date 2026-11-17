@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Publicar receta · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina" style="gap:24px">
+    <div data-ruta></div>
+    <header class="editor-encabezado">
+      <div>
+        <p class="eyebrow">COMPARTE LO QUE SE COCINA EN TU COMUNIDAD</p>
+        <h1 class="titulo-lg" data-titulo>Tu receta, parte de nuestra memoria.</h1>
+        <p class="texto">Cuenta cómo la preparas y de dónde viene. Los campos con * son obligatorios.</p>
+      </div>
+      <span class="estado-documento" data-estado-doc>Borrador · Sin publicar</span>
+    </header>
+
+    <div class="editor">
+      <form class="editor__form" data-form novalidate>
+        <div class="alerta" role="alert" hidden data-alerta></div>
+
+        <!-- 1. El platillo y su historia -->
+        <section class="panel seccion-form">
+          <div class="seccion-form__titulo"><span>1</span><h2>El platillo y su historia</h2></div>
+          <div class="campo">
+            <label for="nombreReceta">Nombre de la receta *</label>
+            <div class="entrada"><input id="nombreReceta" name="nombreReceta" maxlength="30" required placeholder="Sopa de guías de calabaza"></div>
+            <p class="ayuda" data-contador-nombre>Hasta 30 caracteres.</p>
+          </div>
+          <div class="campo">
+            <label for="descripcion">Descripción e historia *</label>
+            <div class="entrada"><textarea id="descripcion" name="descripcion" rows="4" maxlength="4000" required placeholder="¿De dónde viene esta receta? ¿Quién te la enseñó? ¿Cuándo la preparan?"></textarea></div>
+            <p class="ayuda">Comparte el origen familiar o comunitario de la receta con tus propias palabras.</p>
+          </div>
+          <div class="campo">
+            <span class="campo__etiqueta">Fotografía del platillo *</span>
+            <div class="fotos">
+              <div class="foto-cargada" data-foto hidden>
+                <img alt="Foto de portada de la receta" data-foto-img>
+                <div class="foto-cargada__controles"><span>✓ Foto de portada</span><button type="button" data-quitar-foto>Quitar</button></div>
+              </div>
+              <label class="subir-foto" data-subir>
+                <i data-icon="image-plus" data-size="30"></i>
+                <strong data-subir-texto>Agregar fotografía</strong>
+                <small>JPG o PNG · Hasta 10 MB</small>
+                <input class="sr-only" type="file" accept="image/jpeg,image/png" data-archivo>
+              </label>
+            </div>
+            <p class="ayuda">Sube una foto propia del platillo; será la portada de tu receta.</p>
+          </div>
+        </section>
+
+        <!-- 2. El lugar de la receta -->
+        <section class="panel seccion-form">
+          <div class="seccion-form__titulo"><span>2</span><h2>El lugar de la receta</h2></div>
+          <div class="dos-columnas">
+            <div class="campo">
+              <label for="idEstado">Estado *</label>
+              <div class="entrada"><select id="idEstado" name="idEstado" required><option value="">Elige un estado</option></select><i data-icon="chevron-down"></i></div>
+            </div>
+            <div class="campo">
+              <label for="region">Región</label>
+              <div class="entrada"><input id="region" name="region" list="regiones" maxlength="60" placeholder="Valles Centrales"><i data-icon="chevron-down"></i></div>
+              <datalist id="regiones"></datalist>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="localidad">Localidad o comunidad *</label>
+            <div class="entrada"><input id="localidad" name="localidad" maxlength="80" required placeholder="Tlacolula de Matamoros"><i data-icon="map-pin"></i></div>
+          </div>
+          <div class="dos-columnas">
+            <div class="campo">
+              <label for="latitud">Latitud</label>
+              <div class="entrada"><input id="latitud" name="latitud" type="number" step="0.0001" min="14" max="33" placeholder="16.9530"></div>
+            </div>
+            <div class="campo">
+              <label for="longitud">Longitud</label>
+              <div class="entrada"><input id="longitud" name="longitud" type="number" step="0.0001" min="-119" max="-86" placeholder="−96.4760"></div>
+            </div>
+          </div>
+          <div class="ubicacion-elegida" data-ubicacion hidden>
+            <i data-icon="map-pin-check" data-size="25"></i>
+            <div><strong data-ubicacion-texto></strong><small>Ubicación aproximada de la localidad; no es tu domicilio.</small></div>
+            <button type="button" data-cambiar-ubicacion>Cambiar</button>
+          </div>
+        </section>
+
+        <!-- 3. Ingredientes -->
+        <section class="panel seccion-form">
+          <div class="seccion-form__titulo"><span>3</span><h2>Ingredientes y cantidades</h2></div>
+          <p class="texto-sm" style="font-size:14px">Anota cada ingrediente por separado. Usa cantidades para el total de porciones.</p>
+          <div class="ingrediente-cabecera" aria-hidden="true"><span>Cantidad *</span><span>Unidad</span><span>Ingrediente *</span><span></span></div>
+          <div class="lista-editable" data-ingredientes></div>
+          <div><button class="btn btn--secundario" type="button" data-agregar-ingrediente><i data-icon="plus"></i>Agregar ingrediente</button></div>
+        </section>
+
+        <!-- 4. Preparación -->
+        <section class="panel seccion-form">
+          <div class="seccion-form__titulo"><span>4</span><h2>Preparación paso a paso</h2></div>
+          <p class="texto-sm" style="font-size:14px">Explica el proceso en orden, con tiempos y señales para saber cuándo está listo. Arrastra los pasos para reordenarlos.</p>
+          <div class="lista-editable" data-pasos style="gap:18px"></div>
+          <div><button class="btn btn--secundario" type="button" data-agregar-paso><i data-icon="plus"></i>Agregar paso</button></div>
+        </section>
+
+        <!-- 5. Últimos detalles -->
+        <section class="panel seccion-form">
+          <div class="seccion-form__titulo"><span>5</span><h2>Los últimos detalles</h2></div>
+          <div class="tres-columnas">
+            <div class="campo">
+              <label for="porciones">Porciones *</label>
+              <div class="entrada"><input id="porciones" name="porciones" type="number" min="1" max="200" required placeholder="4"><span class="texto-sm">personas</span></div>
+            </div>
+            <div class="campo">
+              <label for="tiempoTotal">Tiempo total *</label>
+              <div class="entrada"><input id="tiempoTotal" name="tiempoTotal" type="number" min="1" max="4320" required placeholder="45"><span class="texto-sm">minutos</span></div>
+            </div>
+            <div class="campo">
+              <label for="dificultad">Dificultad *</label>
+              <div class="entrada"><select id="dificultad" name="dificultad" required><option value="">Elige</option></select><i data-icon="chevron-down"></i></div>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="tipoPlatillo">Tipo de platillo *</label>
+            <div class="entrada"><select id="tipoPlatillo" name="tipoPlatillo" required><option value="">Elige un tipo</option></select><i data-icon="chevron-down"></i></div>
+          </div>
+          <hr class="separador">
+          <div class="casillas">
+            <label class="casilla"><input type="checkbox" name="propia"> La receta y las fotografías son propias o tengo permiso para compartirlas. *</label>
+            <label class="casilla"><input type="checkbox" name="terminos"> Acepto compartir este aporte bajo los Términos de uso de SIGEPA MX. *</label>
+          </div>
+          <div class="acciones-publicar">
+            <button class="btn btn--secundario" type="button" data-guardar-borrador>Guardar borrador</button>
+            <button class="btn btn--primario" type="submit" data-publicar><i data-icon="arrow-up-right"></i>Publicar receta</button>
+          </div>
+        </section>
+      </form>
+
+      <aside class="editor__guia">
+        <div class="panel panel--verde guia">
+          <p class="eyebrow">TU VOZ IMPORTA</p>
+          <h2>Cocinar, contar, conservar.</h2>
+          <p>No hace falta ser chef. Comparte la receta como la preparas en casa, con sus nombres locales y los detalles que la hacen tuya.</p>
+          <p class="guia__cuenta" data-publicando></p>
+        </div>
+        <div class="panel guia">
+          <h2 style="font-size:23px">Antes de publicar</h2>
+          <ul class="revision" data-revision>
+            <li data-r="historia"><i data-icon="circle-check" data-size="17"></i>Nombre e historia de la receta</li>
+            <li data-r="foto"><i data-icon="circle-check" data-size="17"></i>Al menos una foto propia</li>
+            <li data-r="lugar"><i data-icon="circle-check" data-size="17"></i>Estado y localidad de origen</li>
+            <li data-r="pasos"><i data-icon="circle-check" data-size="17"></i>Cantidades e instrucciones claras</li>
+            <li data-r="detalles"><i data-icon="circle-check" data-size="17"></i>Porciones y tiempo total</li>
+          </ul>
+        </div>
+        <div class="panel panel--crema guia">
+          <i data-icon="heart-handshake" data-size="25" style="color:var(--c-verde)"></i>
+          <h2 style="font-size:23px">Comparte con respeto</h2>
+          <p>Reconoce a quienes te enseñaron. No publiques datos personales de otras personas ni conocimientos que tu comunidad prefiera resguardar.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module" src="js/publicar.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="acceso">
+    <div class="acceso__imagen">
+      <img class="acceso__foto-parcial" src="assets/img/cocina-mexicana.jpg" alt="Manos de una cocinera tradicional preparando tortillas junto al comal">
+      <div class="acceso__mensaje">
+        <p class="eyebrow eyebrow--dorado">COCINAR TAMBIÉN ES RECORDAR</p>
+        <h2>Cada receta tiene un lugar. Y una historia que contar.</h2>
+        <p>Forma parte de una memoria gastronómica que se construye en comunidad.</p>
+      </div>
+    </div>
+
+    <form class="acceso__formulario" data-form novalidate>
+      <p class="eyebrow">BIENVENIDA A LA COMUNIDAD</p>
+      <h1 class="titulo-lg">Qué gusto tenerte de vuelta.</h1>
+      <p class="texto">Inicia sesión para guardar tus recetas favoritas y seguir compartiendo los sabores de tu comunidad.</p>
+      <div class="alerta" role="alert" hidden data-alerta></div>
+      <div class="acceso__campos">
+        <div class="campo">
+          <label for="email">Correo electrónico</label>
+          <div class="entrada"><input id="email" name="email" type="email" autocomplete="email" placeholder="ana.lopez@correo.mx" required></div>
+        </div>
+        <div class="campo">
+          <label for="contrasenia">Contraseña</label>
+          <div class="entrada">
+            <input id="contrasenia" name="contrasenia" type="password" autocomplete="current-password" required>
+            <button class="btn-icono" type="button" data-ver-contrasenia="contrasenia" aria-label="Mostrar contraseña"><i data-icon="eye"></i></button>
+          </div>
+          <p class="ayuda">Selecciona el ojo para mostrar u ocultar la contraseña.</p>
+        </div>
+        <div class="acceso__preferencias">
+          <label class="casilla"><input type="checkbox" name="recordar" checked> Recordar mi sesión</label>
+          <a href="recuperar.html">¿Olvidaste tu contraseña?</a>
+        </div>
+        <div><button class="btn btn--primario" type="submit"><i data-icon="arrow-right"></i>Iniciar sesión</button></div>
+      </div>
+      <hr class="separador">
+      <p class="acceso__alterno">¿Aún no tienes cuenta? <a href="registro.html" data-registro>Regístrate aquí →</a></p>
+    </form>
+  </main>
+
+  <script type="module">
+    import { api, sesion, parametro } from "./js/api.js";
+    import { montarLayout } from "./js/layout.js";
+    import { mostrarAlerta } from "./js/componentes.js";
+    import { activarVerContrasenia, destinoSeguro } from "./js/formularios.js";
+
+    montarLayout();
+    activarVerContrasenia();
+    const volver = destinoSeguro(parametro("volver"));
+    if (sesion.activa) location.replace(volver);
+    document.querySelector("[data-registro]").href = `registro.html${location.search}`;
+
+    const form = document.querySelector("[data-form]");
+    const alerta = document.querySelector("[data-alerta]");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const datos = new FormData(form);
+      if (!datos.get("email") || !datos.get("contrasenia")) return mostrarAlerta(alerta, "Escribe tu correo y tu contraseña.");
+      const btn = form.querySelector("[type=submit]");
+      btn.disabled = true;
+      try {
+        const recordar = datos.get("recordar") === "on";
+        const r = await api("/auth/login", { metodo: "POST", cuerpo: { email: datos.get("email"), contrasenia: datos.get("contrasenia"), recordar } });
+        sesion.guardar(r, recordar);
+        location.href = volver;
+      } catch (err) {
+        mostrarAlerta(alerta, err.message);
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

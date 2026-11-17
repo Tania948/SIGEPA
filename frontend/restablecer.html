@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Restablecer contraseña · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="acceso">
+    <div class="acceso__imagen">
+      <img class="acceso__foto-parcial" src="assets/img/cocina-mexicana.jpg" alt="Manos de una cocinera tradicional preparando tortillas junto al comal">
+      <div class="acceso__mensaje">
+        <p class="eyebrow eyebrow--dorado">COCINAR TAMBIÉN ES RECORDAR</p>
+        <h2>Cada receta tiene un lugar. Y una historia que contar.</h2>
+        <p>Forma parte de una memoria gastronómica que se construye en comunidad.</p>
+      </div>
+    </div>
+
+    <form class="acceso__formulario" data-form novalidate>
+      <p class="eyebrow">ELIGE UNA NUEVA CONTRASEÑA</p>
+      <h1 class="titulo-lg">Un nuevo comienzo.</h1>
+      <p class="texto">Crea una contraseña distinta a la anterior para proteger tu cuenta. Después podrás volver a iniciar sesión.</p>
+      <div class="caja-info caja-info--linea" data-correo hidden><i data-icon="shield-check" data-size="20"></i><span></span></div>
+      <div class="alerta" role="alert" hidden data-alerta></div>
+      <div class="acceso__campos" data-campos>
+        <div class="campo">
+          <label for="contrasenia">Nueva contraseña</label>
+          <div class="entrada">
+            <input id="contrasenia" name="contrasenia" type="password" autocomplete="new-password" required>
+            <button class="btn-icono" type="button" data-ver-contrasenia="contrasenia" aria-label="Mostrar contraseña"><i data-icon="eye"></i></button>
+          </div>
+          <div class="requisitos requisitos--columna" data-requisitos>
+            <span class="requisito" data-req="largo"><i data-icon="check" data-size="13"></i>Al menos 8 caracteres</span>
+            <span class="requisito" data-req="mezcla"><i data-icon="check" data-size="13"></i>Incluye una letra y un número</span>
+            <span class="ayuda">Evita usar tu nombre o datos fáciles de adivinar.</span>
+          </div>
+        </div>
+        <div class="campo">
+          <label for="confirmar">Confirma la nueva contraseña</label>
+          <div class="entrada">
+            <input id="confirmar" name="confirmar" type="password" autocomplete="new-password" required>
+            <button class="btn-icono" type="button" data-ver-contrasenia="confirmar" aria-label="Mostrar contraseña"><i data-icon="eye-off"></i></button>
+          </div>
+          <p class="ayuda" data-coinciden>&nbsp;</p>
+        </div>
+        <div><button class="btn btn--primario" type="submit"><i data-icon="check"></i>Guardar nueva contraseña</button></div>
+      </div>
+      <hr class="separador">
+      <a class="enlace-plano" href="login.html">← Volver a iniciar sesión</a>
+    </form>
+  </main>
+
+  <script type="module">
+    import { api, parametro } from "./js/api.js";
+    import { montarLayout } from "./js/layout.js";
+    import { mostrarAlerta } from "./js/componentes.js";
+    import { activarRequisitos, activarVerContrasenia, revisarContrasenia } from "./js/formularios.js";
+
+    montarLayout();
+    activarVerContrasenia();
+    const form = document.querySelector("[data-form]");
+    const alerta = document.querySelector("[data-alerta]");
+    const token = parametro("token");
+    activarRequisitos(form.contrasenia, document.querySelector("[data-requisitos]"));
+
+    const coinciden = () => {
+      const p = document.querySelector("[data-coinciden]");
+      if (!form.confirmar.value) { p.innerHTML = "&nbsp;"; return; }
+      const ok = form.confirmar.value === form.contrasenia.value;
+      p.textContent = ok ? "Las contraseñas coinciden." : "Las contraseñas no coinciden.";
+      p.classList.toggle("ayuda--error", !ok);
+    };
+    form.confirmar.addEventListener("input", coinciden);
+    form.contrasenia.addEventListener("input", coinciden);
+
+    if (!token) {
+      mostrarAlerta(alerta, "Abre esta página desde el enlace que te enviamos por correo.");
+      document.querySelector("[data-campos]").hidden = true;
+    } else {
+      try {
+        const { email } = await api(`/auth/restablecer/${encodeURIComponent(token)}`);
+        const caja = document.querySelector("[data-correo]");
+        caja.querySelector("span").textContent = `Restableciendo el acceso de ${email}`;
+        caja.hidden = false;
+      } catch (err) {
+        mostrarAlerta(alerta, err.message);
+        document.querySelector("[data-campos]").innerHTML = `<a class="btn btn--primario" href="recuperar.html">Solicitar un enlace nuevo</a>`;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const req = revisarContrasenia(form.contrasenia.value);
+      if (!req.largo || !req.mezcla) return mostrarAlerta(alerta, "Tu contraseña necesita al menos 8 caracteres, con una letra y un número.");
+      if (form.contrasenia.value !== form.confirmar.value) return mostrarAlerta(alerta, "Las contraseñas no coinciden.");
+      const btn = form.querySelector("[type=submit]");
+      btn.disabled = true;
+      try {
+        const r = await api("/auth/restablecer", { metodo: "POST", cuerpo: { token, contrasenia: form.contrasenia.value } });
+        mostrarAlerta(alerta, r.mensaje, "ok");
+        document.querySelector("[data-campos]").innerHTML = `<a class="btn btn--primario" href="login.html">Iniciar sesión</a>`;
+      } catch (err) {
+        mostrarAlerta(alerta, err.message);
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

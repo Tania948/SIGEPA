@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recetas · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina">
+    <div data-ruta></div>
+
+    <section class="encabezado-busqueda">
+      <div class="encabezado-busqueda__intro">
+        <p class="eyebrow">ENCUENTRA TU PRÓXIMO PLATILLO</p>
+        <h1 class="titulo-lg" data-titulo>Todas las recetas</h1>
+        <p class="texto" data-subtitulo></p>
+      </div>
+      <div class="encabezado-busqueda__buscar">
+        <form class="buscador" role="search" data-buscar>
+          <i data-icon="search" data-size="20"></i>
+          <label class="sr-only" for="q">Busca un platillo o ingredientes</label>
+          <input id="q" name="q" type="search" placeholder="Busca un platillo o ingredientes" autocomplete="off">
+          <button class="btn btn--primario" type="submit">Buscar recetas</button>
+        </form>
+        <p class="texto-sm" style="color:var(--c-verde)">Buscar por nombre o ingredientes · <a class="enlace-plano" style="font-size:13px" href="busqueda.html">Búsqueda avanzada →</a></p>
+      </div>
+    </section>
+
+    <div class="filtros-activos" data-activos hidden></div>
+
+    <section class="resultados">
+      <form class="panel refinar" data-refinar>
+        <h2>Refina tu búsqueda</h2>
+        <div class="campo">
+          <label for="f-estado">Estado</label>
+          <div class="entrada"><select id="f-estado" name="estado"><option value="">Todos los estados</option></select><i data-icon="chevron-down"></i></div>
+        </div>
+        <div class="campo">
+          <label for="f-tipo">Tipo de platillo</label>
+          <div class="entrada"><select id="f-tipo" name="tipo"><option value="">Todos los tipos</option></select><i data-icon="chevron-down"></i></div>
+        </div>
+        <hr class="separador">
+        <fieldset class="refinar__grupo" style="border:0;margin:0;padding:0">
+          <legend class="campo__etiqueta" style="margin-bottom:14px">Tiempo de preparación</legend>
+          <div class="refinar__grupo" data-tiempos></div>
+        </fieldset>
+        <hr class="separador">
+        <div class="campo">
+          <label for="f-dificultad">Dificultad</label>
+          <div class="entrada"><select id="f-dificultad" name="dificultad"><option value="">Cualquier dificultad</option></select><i data-icon="chevron-down"></i></div>
+        </div>
+        <label class="casilla"><input type="checkbox" name="conFoto" value="1"> Solo con fotografía</label>
+        <div><button class="btn btn--primario" type="submit">Aplicar filtros</button></div>
+      </form>
+
+      <div class="resultados__principal">
+        <div class="resultados__barra">
+          <p data-conteo aria-live="polite"></p>
+          <div data-orden></div>
+        </div>
+        <div class="rejilla-recetas" data-lista></div>
+        <div data-paginacion></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/recetas.js"></script>
+</body>
+</html>

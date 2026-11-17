@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Búsqueda avanzada · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina" style="padding-left:120px;padding-right:120px;max-width:1440px">
+    <div data-ruta></div>
+    <header style="display:flex;flex-direction:column;gap:14px">
+      <p class="eyebrow">BUSCA A TU MANERA</p>
+      <h1 class="titulo-lg">El sabor que tienes en mente.</h1>
+      <p class="texto">Combina ingredientes, lugares y tiempos para encontrar una receta. No necesitas llenar todos los campos.</p>
+    </header>
+
+    <div class="busqueda-avanzada">
+      <form class="panel busqueda-avanzada__form" data-form novalidate>
+        <div class="busqueda-avanzada__titulo"><i data-icon="sliders-horizontal" data-size="22"></i><h2>Personaliza tu búsqueda</h2></div>
+
+        <div class="campo">
+          <label for="nombre">Nombre del platillo</label>
+          <div class="entrada"><input id="nombre" name="nombre" placeholder="Mole amarillo" autocomplete="off"></div>
+          <p class="ayuda">También puedes escribir solo una parte del nombre.</p>
+        </div>
+
+        <div class="campo">
+          <label for="ingrediente">Ingredientes que quieres usar</label>
+          <div class="entrada">
+            <input id="ingrediente" placeholder="Escribe un ingrediente y agrégalo" autocomplete="off">
+            <button class="btn-icono" type="button" data-agregar aria-label="Agregar ingrediente"><i data-icon="plus" data-size="20"></i></button>
+          </div>
+          <div class="chips" data-ingredientes></div>
+          <label class="casilla" style="margin-top:4px"><input type="checkbox" name="todos" checked> Incluir todos los ingredientes seleccionados</label>
+        </div>
+
+        <hr class="separador">
+
+        <div class="dos-columnas">
+          <div class="campo">
+            <label for="estado">Estado</label>
+            <div class="entrada"><select id="estado" name="estado"><option value="">Todos los estados</option></select><i data-icon="chevron-down"></i></div>
+          </div>
+          <div class="campo">
+            <label for="region">Región</label>
+            <div class="entrada"><select id="region" name="region"><option value="">Todas las regiones</option></select><i data-icon="chevron-down"></i></div>
+          </div>
+          <div class="campo">
+            <label for="tipo">Tipo de platillo</label>
+            <div class="entrada"><select id="tipo" name="tipo"><option value="">Todos los tipos</option></select><i data-icon="chevron-down"></i></div>
+          </div>
+          <div class="campo">
+            <label for="tiempoMax">Tiempo máximo</label>
+            <div class="entrada"><select id="tiempoMax" name="tiempoMax"><option value="">Cualquier tiempo</option></select><i data-icon="chevron-down"></i></div>
+          </div>
+        </div>
+
+        <label class="casilla"><input type="checkbox" name="conFoto" checked> Mostrar únicamente recetas con fotografía</label>
+        <hr class="separador">
+        <div class="busqueda-avanzada__acciones">
+          <button class="enlace-terracota" type="button" data-limpiar>Limpiar todos los campos</button>
+          <button class="btn btn--primario" type="submit"><i data-icon="search"></i>Buscar recetas</button>
+        </div>
+      </form>
+
+      <aside class="aside-pila">
+        <div class="panel panel--verde consejo-card">
+          <i data-icon="lightbulb" data-size="28"></i>
+          <h3>Empieza por lo que tienes.</h3>
+          <p class="texto" style="font-size:15px">¿Hay maíz, frijol o calabaza en tu cocina? Busca con esos ingredientes y descubre nuevas formas de prepararlos.</p>
+        </div>
+        <div class="panel consejo-card">
+          <h3>¿Prefieres un lugar?</h3>
+          <p class="texto" style="font-size:15px">Recorre el mapa y conoce los platillos que cada comunidad comparte.</p>
+          <a class="enlace" href="index.html#territorio">Explorar México →</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module">
+    import { api, esc } from "./js/api.js";
+    import { TIEMPOS_MAXIMOS, TIPOS_PLATILLO, regionesDe } from "./js/catalogos.js";
+    import { icon } from "./js/icons.js";
+    import { montarLayout, ruta } from "./js/layout.js";
+
+    montarLayout("recetas");
+    const $ = (s) => document.querySelector(s);
+    $("[data-ruta]").outerHTML = ruta([["Inicio", "index.html"], ["Búsqueda avanzada"]]);
+    const form = $("[data-form]");
+    let ingredientes = [];
+    let estados = [];
+
+    form.tipo.insertAdjacentHTML("beforeend", TIPOS_PLATILLO.map((t) => `<option>${esc(t)}</option>`).join(""));
+    form.tiempoMax.insertAdjacentHTML("beforeend", TIEMPOS_MAXIMOS.map((m) => `<option value="${m}">${m} minutos</option>`).join(""));
+
+    function pintarIngredientes() {
+      $("[data-ingredientes]").innerHTML = ingredientes.map((i, n) =>
+        `<span class="chip">${esc(i)}<button class="chip__quitar" type="button" data-quitar="${n}" aria-label="Quitar ${esc(i)}">${icon("x", 14)}</button></span>`).join("");
+    }
+    function agregar() {
+      const input = $("#ingrediente");
+      input.value.split(",").map((s) => s.trim()).filter(Boolean).forEach((v) => {
+        const bonito = v[0].toUpperCase() + v.slice(1).toLowerCase();
+        if (!ingredientes.some((x) => x.toLowerCase() === v.toLowerCase())) ingredientes.push(bonito);
+      });
+      input.value = "";
+      pintarIngredientes();
+      input.focus();
+    }
+    $("[data-agregar]").addEventListener("click", agregar);
+    $("#ingrediente").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); agregar(); } });
+    $("[data-ingredientes]").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-quitar]");
+      if (b) { ingredientes.splice(Number(b.dataset.quitar), 1); pintarIngredientes(); }
+    });
+
+    async function cargarRegiones() {
+      const nombre = estados.find((e) => e.idEstado === Number(form.estado.value))?.nomEstado;
+      let lista = [];
+      if (nombre) lista = regionesDe(nombre, await api(`/recetas/regiones?estado=${form.estado.value}`).catch(() => []));
+      form.region.innerHTML = `<option value="">Todas las regiones</option>` + lista.map((r) => `<option>${esc(r)}</option>`).join("");
+      form.region.disabled = !nombre;
+    }
+    form.estado.addEventListener("change", cargarRegiones);
+
+    $("[data-limpiar]").addEventListener("click", () => {
+      form.reset(); ingredientes = []; pintarIngredientes(); cargarRegiones();
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if ($("#ingrediente").value.trim()) agregar();
+      const p = new URLSearchParams();
+      const set = (k, v) => v && p.set(k, v);
+      set("nombre", form.nombre.value.trim());
+      set("ing", ingredientes.join(",").toLowerCase());
+      if (ingredientes.length > 1) p.set("ingModo", form.todos.checked ? "todos" : "alguno");
+      set("estado", form.estado.value); set("region", form.region.value);
+      set("tipo", form.tipo.value); set("tiempoMax", form.tiempoMax.value);
+      if (form.conFoto.checked) p.set("conFoto", "1");
+      location.href = `recetas.html?${p}`;
+    });
+
+    estados = await api("/estados").catch(() => []);
+    form.estado.insertAdjacentHTML("beforeend", estados.map((e) => `<option value="${e.idEstado}">${esc(e.nomEstado)}</option>`).join(""));
+    cargarRegiones();
+  </script>
+</body>
+</html>
