@@ -3,6 +3,7 @@ import { esc, sesion } from "./api.js";
 import { hydrateIcons, icon } from "./icons.js";
 import { avatar as avatarIniciales } from "./componentes.js";
 import { IDIOMAS, aplicarIdioma, idiomaActual } from "./idioma.js";
+import { montarAsistente } from "./asistente.js";
 
 const opcionesIdioma = () => Object.entries(IDIOMAS).map(([clave, i]) =>
   `<button type="button" class="idioma__opcion" data-idioma="${clave}" lang="${clave}" aria-pressed="${clave === idiomaActual()}">${i.nombre}</button>`).join("");
@@ -155,6 +156,7 @@ export function montarLayout(activa) {
     aplicarIdioma(b.dataset.idioma);
     menuIdioma.hidden = true;
   }));
+  montarAsistente();
   aplicarIdioma();
 
   document.querySelectorAll("[data-salir]").forEach((b) => b.addEventListener("click", () => {

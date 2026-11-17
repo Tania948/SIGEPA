@@ -1,5 +1,5 @@
 // Mapa interactivo de México con Leaflet.
-// - Mapa base por API: CARTO / OpenStreetMap (calles) y Esri World Imagery (satélite).
+// - Mapa base por API sin llave: OpenStreetMap y Esri (calles y satélite).
 // - Límites estatales y municipales del Marco Geoestadístico INEGI (assets/mapa, TopoJSON).
 // - Pines de recetas con sus coordenadas.
 // Requiere en la página: vendor/leaflet/leaflet.css, vendor/leaflet/leaflet.js y vendor/topojson-client.min.js
@@ -21,6 +21,7 @@ async function topo(ruta) {
   }
   return cache.get(ruta);
 }
+export { topo };
 export const claveEnt = (id) => String(id).padStart(2, "0");
 export const cargarMunicipios = (idEstado) => topo(`municipios/${claveEnt(idEstado)}.json`);
 
@@ -39,14 +40,31 @@ export function contiene(geom, lng, lat) {
 }
 
 function capasBase() {
-  const calles = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-    maxZoom: 18, subdomains: "abcd",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> · Límites: INEGI',
+  // Ninguna de estas capas pide llave de API. (CARTO empezó a pedirla y mostraba "API KEY REQUIRED".)
+  const calles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Límites: INEGI',
+  });
+  const callesEsri = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 18, attribution: "Mapa &copy; Esri · Límites: INEGI",
   });
   const satelite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     maxZoom: 18, attribution: "Imágenes &copy; Esri · Límites: INEGI",
   });
-  return { Mapa: calles, "Satélite": satelite };
+  return { Mapa: calles, "Calles (Esri)": callesEsri, "Satélite": satelite };
+}
+
+/** Pone el mapa base; si OpenStreetMap no responde, cambia solo a las calles de Esri. */
+export function ponerBase(mapa, { control = true } = {}) {
+  const bases = capasBase();
+  bases.Mapa.addTo(mapa);
+  let fallas = 0;
+  bases.Mapa.on("tileerror", () => {
+    fallas += 1;
+    if (fallas === 6 && mapa.hasLayer(bases.Mapa)) { mapa.removeLayer(bases.Mapa); bases["Calles (Esri)"].addTo(mapa); }
+  });
+  if (control) L.control.layers(bases, null, { position: "topleft", collapsed: true }).addTo(mapa);
+  return bases;
 }
 
 /**
@@ -62,9 +80,7 @@ export function crearAtlas(el, op = {}) {
     zoomControl: false, minZoom: 4, zoomSnap: 0.25, zoomDelta: 0.5, maxBounds: L.latLngBounds(LIMITES_MEXICO).pad(0.35),
     scrollWheelZoom: op.rueda ?? false, attributionControl: true,
   });
-  const bases = capasBase();
-  bases.Mapa.addTo(mapa);
-  L.control.layers(bases, null, { position: "topleft", collapsed: true }).addTo(mapa);
+  ponerBase(mapa);
   L.control.zoom({ position: "topright", zoomInTitle: "Acercar", zoomOutTitle: "Alejar" }).addTo(mapa);
   L.control.scale({ imperial: false, position: "bottomleft" }).addTo(mapa);
   mapa.fitBounds(LIMITES_MEXICO);
@@ -152,6 +168,28 @@ export function crearAtlas(el, op = {}) {
       capaPuntos.eachLayer((p) => p.bringToFront?.());
       if (acercar && limites) mapa.flyToBounds(limites, { padding: [40, 40], maxZoom: 12, duration: 0.6 });
       return limites;
+    },
+    /** Resalta varios estados a la vez (p. ej. dónde se da un ingrediente) y encuadra el mapa en ellos. */
+    async resaltarEstados(ids, { acercar = true } = {}) {
+      await listo;
+      const set = new Set(ids.map(Number));
+      estadoActivo = null; municipioActivo = null;
+      pintarMunicipios(null);
+      let limites = null;
+      capaEstados.eachLayer((c) => {
+        const activo = set.has(Number(c.feature.properties.ent));
+        c.setStyle(activo ? { fillColor: COLORES.municipio, fillOpacity: 0.7, color: COLORES.borde, weight: 1.2 }
+          : { fillColor: COLORES.estado, fillOpacity: set.size ? 0.25 : 0.45, color: COLORES.borde, weight: 0.9 });
+        if (activo) limites = limites ? limites.extend(c.getBounds()) : L.latLngBounds(c.getBounds().getSouthWest(), c.getBounds().getNorthEast());
+      });
+      if (acercar) mapa.fitBounds(limites ?? LIMITES_MEXICO, { padding: [16, 16] });
+    },
+    /** Encuadra el mapa en los pines que se muestran. */
+    encuadrarPuntos({ maxZoom = 8 } = {}) {
+      const capas = capaPuntos.getLayers();
+      if (!capas.length) return;
+      const b = L.latLngBounds(capas.map((c) => c.getLatLng()));
+      mapa.fitBounds(b.pad(0.25), { maxZoom, padding: [20, 20] });
     },
     /** Vuelve a la vista de todo México. */
     verPais() {
