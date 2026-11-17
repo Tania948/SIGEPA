@@ -8,7 +8,11 @@ import {
  * Única adición: Receta.urlImagen, que el Modelo E-R (10.1) define como "url_imagen".
  */
 
-export enum TipoUsuario { ADMINISTRADOR = 1, REGULAR = 2 }
+/**
+ * Catálogo de roles (el diccionario pide "definir catálogo de roles" para tipoUsu):
+ * 1 = administrador, 2 = usuario (explora y guarda recetas), 3 = portador de saberes (publica recetas).
+ */
+export enum TipoUsuario { ADMINISTRADOR = 1, REGULAR = 2, PORTADOR = 3 }
 export type EstadoValidacion = 'pendiente' | 'validada' | 'rechazada';
 export type EstadoComentario = 'publicado' | 'oculto' | 'eliminado';
 
@@ -30,7 +34,7 @@ export class Usuario {
   @Column({ length: 20 }) nombre: string;
   @Column({ length: 20 }) apPat: string;
   @Column({ type: 'varchar', length: 20, nullable: true }) apMat: string | null;
-  /** 1 = administrador, 2 = usuario regular */
+  /** 1 = administrador, 2 = usuario, 3 = portador de saberes */
   @Column({ type: 'int', default: TipoUsuario.REGULAR }) tipoUsu: TipoUsuario;
   @Column({ length: 40, unique: true }) email: string;
   @OneToMany(() => Receta, (r) => r.usuario) recetas: Receta[];

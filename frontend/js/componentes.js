@@ -37,9 +37,7 @@ const ETIQUETAS = {
 export function tarjetaReceta(r, { modo = "publica", enlaceEditar } = {}) {
   const url = r.idReceta ? `receta.html?id=${r.idReceta}` : enlaceEditar;
   const editar = enlaceEditar ?? `publicar.html?id=${r.idReceta}`;
-  const foto = r.urlImagen
-    ? `<img src="${esc(r.urlImagen)}" alt="" loading="lazy">`
-    : `<div class="tarjeta__foto-vacia">${icon("cooking-pot", 32)}</div>`;
+  const foto = r.urlImagen ? `<img src="${esc(r.urlImagen)}" alt="" loading="lazy">` : fotoVacia(r);
 
   let accion;
   if (modo === "propia") {
@@ -76,6 +74,20 @@ export function tarjetaReceta(r, { modo = "publica", enlaceEditar } = {}) {
         ${quitar}
       </div>
     </article>`;
+}
+
+/** Ilustración para recetas sin fotografía, según el tipo de platillo. */
+const ILUSTRACION = {
+  "Sopa o caldo": ["soup", "#e7eee6"], "Tamal": ["leaf", "#e9efd9"], "Antojito": ["flame", "#f6e5de"],
+  "Bebida": ["coffee", "#efe6da"], "Postre": ["cake-slice", "#f6ead4"], "Guarnición": ["salad", "#e7eee6"],
+  "Salsa o mole": ["flame", "#f2e1dc"], "Plato fuerte": ["utensils-crossed", "#f0ede3"],
+};
+export function fotoVacia(r, tam = 40) {
+  let [ico, fondo] = ILUSTRACION[r.tipoPlatillo] ?? ["cooking-pot", "#f0ede3"];
+  if (/pescado|camar|jaiba|langosta|almeja|pejelagarto|aguachile|caz[oó]n|tikin/i.test(r.nombreReceta ?? "")) ico = "fish";
+  return `<div class="tarjeta__foto-vacia" style="background-color:${fondo}">
+    <span class="foto-vacia__icono">${icon(ico, tam)}</span>
+    <span class="foto-vacia__texto">${esc(r.estado?.nomEstado ?? "")}</span></div>`;
 }
 
 function irAlAcceso() {
@@ -185,4 +197,12 @@ export function estadoVacio(mensaje, accionHtml = "") {
 
 export function cargando() {
   return `<div class="vacio vacio--cargando"><p>Cargando…</p></div>`;
+}
+
+export const ROLES = { 1: "Equipo SIGEPA", 2: "Usuario", 3: "Portador(a) de saberes" };
+
+/** Insignia del rol (tipoUsu): 1 administrador, 2 usuario, 3 portador de saberes. */
+export function insigniaRol(tipoUsu) {
+  if (!ROLES[tipoUsu]) return "";
+  return `<span class="insignia${tipoUsu === 3 ? " insignia--portador" : ""}">${icon(tipoUsu === 3 ? "heart-handshake" : "user-round", 14)}${ROLES[tipoUsu]}</span>`;
 }

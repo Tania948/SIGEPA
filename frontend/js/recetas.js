@@ -10,7 +10,7 @@ const $ = (s) => document.querySelector(s);
 $("[data-ruta]").outerHTML = ruta([["Inicio", "index.html"], ["Recetas", "recetas.html"], ["Resultados de búsqueda"]]);
 
 const POR_PAGINA = 6;
-const CLAVES = ["q", "nombre", "ing", "ingModo", "estado", "region", "tipo", "dificultad", "tiempo", "tiempoMax", "conFoto", "orden", "page"];
+const CLAVES = ["q", "nombre", "ing", "ingModo", "estado", "mun", "munNombre", "region", "tipo", "dificultad", "tiempo", "tiempoMax", "conFoto", "orden", "page"];
 let params = Object.fromEntries([...new URLSearchParams(location.search)].filter(([k, v]) => CLAVES.includes(k) && v));
 let estados = [];
 
@@ -54,6 +54,7 @@ function encabezado() {
   let sub = "Sabores compartidos por las comunidades de México.";
   if (termino) { titulo = `Recetas con ${termino}`; sub = "Distintos lugares, un ingrediente que nos reúne."; }
   else if (params.ing) { titulo = `Recetas con ${params.ing.split(",").join(", ")}`; sub = "Distintos lugares, ingredientes que nos reúnen."; }
+  else if (params.munNombre) { titulo = `Recetas de ${params.munNombre}`; sub = `Lo que se cocina en ${params.munNombre}, ${estado}.`; }
   else if (estado) { titulo = `Recetas de ${estado}`; sub = "Cada receta conserva su lugar de origen y la voz de quien la comparte."; }
   $("[data-titulo]").textContent = titulo;
   $("[data-subtitulo]").textContent = sub;
@@ -68,7 +69,8 @@ function chipsActivos() {
   if (params.nombre) chip(`Nombre: ${params.nombre}`, { nombre: undefined });
   (params.ing ?? "").split(",").filter(Boolean).forEach((i) =>
     chip(`Ingrediente: ${i}`, { ing: params.ing.split(",").filter((x) => x !== i).join(",") || undefined }));
-  if (params.estado) chip(`Estado: ${params.estado.split(",").map(nombreEstado).join(", ")}`, { estado: undefined, region: undefined });
+  if (params.estado) chip(`Estado: ${params.estado.split(",").map(nombreEstado).join(", ")}`, { estado: undefined, region: undefined, mun: undefined, munNombre: undefined });
+  if (params.mun) chip(`Municipio: ${params.munNombre ?? params.mun}`, { mun: undefined, munNombre: undefined });
   if (params.region) chip(`Región: ${params.region}`, { region: undefined });
   if (params.tipo) chip(params.tipo, { tipo: undefined });
   if (params.dificultad) chip(`Dificultad: ${params.dificultad}`, { dificultad: undefined });

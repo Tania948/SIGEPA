@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Estado · SIGEPA MX</title>
   <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -21,6 +22,14 @@
         <p data-texto></p>
         <p class="estado-hero__etiquetas" data-etiquetas></p>
       </div>
+    </section>
+
+    <section class="estado-listado" style="gap:14px">
+      <div class="seccion-encabezado">
+        <h2 class="titulo-md">Sus municipios en el mapa</h2>
+        <p class="texto-xs" data-mapa-ayuda>Toca un municipio para ver sus recetas.</p>
+      </div>
+      <div class="mapa-estado" data-mapa-estado role="application" aria-label="Mapa de municipios"></div>
     </section>
 
     <div class="estado-buscar">
@@ -57,8 +66,12 @@
     </section>
   </main>
 
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
   <script type="module">
     import { api, esc, parametro } from "./js/api.js";
+    import { crearAtlas } from "./js/mapa-mexico.js";
+    import { icon } from "./js/icons.js";
     import { DIFICULTADES, RANGOS_TIEMPO, TIPOS_PLATILLO, infoEstado, regionesDe } from "./js/catalogos.js";
     import { activarFavoritos, cargando, estadoVacio, paginacion, pildoraMenu, tarjetaReceta } from "./js/componentes.js";
     import { montarLayout, ruta } from "./js/layout.js";
@@ -98,7 +111,8 @@
     $("[data-invitacion]").textContent = `Ayúdanos a contar ${estado.nomEstado} desde tu mesa. Comparte una receta y el lugar al que pertenece.`;
 
     // Filtros
-    const filtros = { region: "", tipo: "", tiempo: "", dificultad: "", conFoto: "", orden: "", q: "", page: 1 };
+    const filtros = { region: "", tipo: "", tiempo: "", dificultad: "", conFoto: "", orden: "", q: "", mun: "", page: 1 };
+    let munNombre = "";
     const regiones = regionesDe(estado.nomEstado, await api(`/recetas/regiones?estado=${id}`).catch(() => []));
     const caja = $("[data-filtros]");
     const al = (k) => (v) => { filtros[k] = v; filtros.page = 1; cargar(); };
@@ -129,13 +143,36 @@
       if (b && !b.disabled) { filtros.page = Number(b.dataset.pagina); cargar(); $("[data-titulo-lista]").scrollIntoView({ behavior: "smooth" }); }
     });
 
+    // Mapa de municipios del estado
+    const puntos = await api(`/recetas/mapa?estado=${id}`).catch(() => []);
+    const deMun = (cve) => puntos.filter((p) => p.cveMun === cve).length;
+    const atlas = crearAtlas($("[data-mapa-estado]"), {
+      soloEstado: id,
+      textoMunicipio: (cve, nombre) => `${nombre} · ${deMun(cve)} ${deMun(cve) === 1 ? "receta" : "recetas"}`,
+      alSeleccionarMunicipio: ({ cve, nombre }) => {
+        atlas.seleccionarMunicipio(cve);
+        filtros.mun = cve; munNombre = nombre; filtros.page = 1;
+        pintarChipMunicipio(); cargar();
+        $("[data-titulo-lista]").scrollIntoView({ behavior: "smooth", block: "start" });
+      },
+    });
+    atlas.seleccionarEstado(id).then(() => atlas.mostrarPuntos(puntos));
+    function pintarChipMunicipio() {
+      caja.querySelector("[data-chip-mun]")?.remove();
+      if (!filtros.mun) return;
+      caja.insertAdjacentHTML("afterbegin", `<span class="chip" data-chip-mun>Municipio: ${esc(munNombre)}<button class="chip__quitar" type="button" aria-label="Quitar municipio">${icon("x", 14)}</button></span>`);
+      caja.querySelector("[data-chip-mun] button").addEventListener("click", () => {
+        filtros.mun = ""; munNombre = ""; pintarChipMunicipio(); cargar(); atlas.seleccionarEstado(id);
+      });
+    }
+
     async function cargar() {
       lista.innerHTML = cargando();
       const p = new URLSearchParams({ estado: id, limit: 6 });
       Object.entries(filtros).forEach(([k, v]) => v && p.set(k, v));
       try {
         const r = await api(`/recetas?${p}`);
-        $("[data-conteo]").textContent = `${r.total} ${r.total === 1 ? "receta" : "recetas"} · ${filtros.region || "Todas las regiones"}`;
+        $("[data-conteo]").textContent = `${r.total} ${r.total === 1 ? "receta" : "recetas"} · ${munNombre || filtros.region || "Todas las regiones"}`;
         lista.innerHTML = r.items.length ? r.items.map((x) => tarjetaReceta(x)).join("")
           : estadoVacio(`Todavía no hay recetas de ${estado.nomEstado} con estos filtros.`,
               `<a class="btn btn--primario" href="publicar.html?estado=${id}">Aportar una receta</a>`);

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Publicar receta · SIGEPA MX</title>
   <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -18,6 +19,22 @@
       </div>
       <span class="estado-documento" data-estado-doc>Borrador · Sin publicar</span>
     </header>
+
+    <section class="panel puerta" data-puerta hidden>
+      <span class="insignia insignia--portador"><i data-icon="heart-handshake" data-size="14"></i>Portadores de saberes</span>
+      <h2>Publicar recetas es para quienes guardan los saberes de su comunidad.</h2>
+      <p class="texto">Tu cuenta es de <strong>usuario</strong>: puedes explorar, guardar favoritas y comentar. Si cocinas recetas de tu familia o tu comunidad y quieres compartirlas, regístrate como portador o portadora de saberes.</p>
+      <ul>
+        <li>Publicas recetas con su lugar de origen, ingredientes, pasos e historia.</li>
+        <li>Cada receta conserva tu autoría y la revisa el equipo antes de aparecer en el mapa.</li>
+        <li>Decides qué compartir; los saberes que tu comunidad prefiera resguardar se quedan en casa.</li>
+      </ul>
+      <div class="alerta" hidden data-alerta-puerta></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn--primario" type="button" data-hacerme-portador><i data-icon="check"></i>Soy portador o portadora de saberes</button>
+        <a class="btn btn--secundario" href="recetas.html">Seguir explorando</a>
+      </div>
+    </section>
 
     <div class="editor">
       <form class="editor__form" data-form novalidate>
@@ -68,9 +85,20 @@
               <datalist id="regiones"></datalist>
             </div>
           </div>
+          <div class="dos-columnas">
+            <div class="campo">
+              <label for="cveMun">Municipio *</label>
+              <div class="entrada"><select id="cveMun" name="cveMun" required><option value="">Primero elige el estado</option></select><i data-icon="chevron-down"></i></div>
+            </div>
+            <div class="campo">
+              <label for="localidad">Localidad o comunidad *</label>
+              <div class="entrada"><input id="localidad" name="localidad" maxlength="80" required placeholder="Tlacolula de Matamoros"><i data-icon="map-pin"></i></div>
+            </div>
+          </div>
           <div class="campo">
-            <label for="localidad">Localidad o comunidad *</label>
-            <div class="entrada"><input id="localidad" name="localidad" maxlength="80" required placeholder="Tlacolula de Matamoros"><i data-icon="map-pin"></i></div>
+            <span class="campo__etiqueta">Marca la localidad en el mapa</span>
+            <div class="mapa-elegir" data-mapa-elegir role="application" aria-label="Mapa para marcar la localidad"></div>
+            <p class="ayuda">Toca el mapa en la localidad de origen. Se llenan solas las coordenadas y el municipio. Marca la comunidad, nunca un domicilio.</p>
           </div>
           <div class="dos-columnas">
             <div class="campo">
@@ -165,6 +193,8 @@
     </div>
   </main>
 
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
   <script type="module" src="js/publicar.js"></script>
 </body>
 </html>

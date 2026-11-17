@@ -5,11 +5,11 @@ import {
 import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
 import { Type } from 'class-transformer';
 import {
-  ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, MinLength,
+  ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
-import { AdminGuard, AuthGuard, CurrentUser, OptionalAuthGuard, SesionUsuario } from '../auth/auth';
+import { AdminGuard, AuthGuard, CurrentUser, OptionalAuthGuard, PortadorGuard, SesionUsuario } from '../auth/auth';
 import { Estado, Receta, TipoUsuario } from '../entities';
 
 /*
@@ -58,6 +58,9 @@ export class RecetaDto {
   @IsOptional() @IsIn(TIPOS_PLATILLO) tipoPlatillo?: string;
   @IsOptional() @IsString() @MaxLength(60) region?: string;
   @IsOptional() @IsString() @MaxLength(80) localidad?: string;
+  @IsOptional() @IsString() @MaxLength(80) municipio?: string;
+  /** Clave geoestadística INEGI del municipio (5 dígitos, p. ej. 20068). */
+  @IsOptional() @Matches(/^\d{5}$/) cveMun?: string;
   @IsOptional() @IsNumber() @Min(14) @Max(33) latitud?: number;
   @IsOptional() @IsNumber() @Min(-119) @Max(-86) longitud?: number;
   @IsOptional() @IsString() @MaxLength(600) consejo?: string;
@@ -94,6 +97,8 @@ export function serializarReceta(r: Receta) {
     tipoPlatillo: prep.tipoPlatillo ?? null,
     region: prep.region ?? null,
     localidad: prep.localidad ?? null,
+    municipio: prep.municipio ?? null,
+    cveMun: prep.cveMun ?? null,
     latitud: prep.latitud ?? null,
     longitud: prep.longitud ?? null,
     consejo: prep.consejo ?? null,
@@ -115,7 +120,7 @@ export const campoPrep = (campo: string) =>
 
 export interface FiltrosReceta {
   q?: string; nombre?: string; ing?: string; ingModo?: string; estado?: string; region?: string; tipo?: string;
-  dificultad?: string; tiempo?: string; tiempoMax?: string; conFoto?: string; autor?: string; ids?: string;
+  dificultad?: string; tiempo?: string; mun?: string; tiempoMax?: string; conFoto?: string; autor?: string; ids?: string;
   orden?: string; page?: string; limit?: string;
 }
 
@@ -152,6 +157,7 @@ export class RecetasService {
     if (estados.length) qb.andWhere('r.idEstado IN (:...estados)', { estados });
     if (f.region) qb.andWhere(`${campoPrep('region')} = :region`, { region: f.region });
     if (f.tipo) qb.andWhere(`${campoPrep('tipoPlatillo')} = :tipo`, { tipo: f.tipo });
+    if (f.mun) qb.andWhere(`${campoPrep('cveMun')} = :mun`, { mun: f.mun });
     const dif = lista(f.dificultad);
     if (dif.length) qb.andWhere(`${campoPrep('dificultad')} IN (:...dif)`, { dif });
 
@@ -209,6 +215,7 @@ export class RecetasService {
     const prep = {
       pasos, porciones: dto.porciones, tiempoTotal: dto.tiempoTotal, dificultad: dto.dificultad,
       tipoPlatillo: dto.tipoPlatillo, region: dto.region?.trim() || undefined, localidad: dto.localidad?.trim() || undefined,
+      municipio: dto.municipio?.trim() || undefined, cveMun: dto.cveMun || undefined,
       latitud: dto.latitud, longitud: dto.longitud, consejo: dto.consejo?.trim() || undefined,
       historia: dto.historia?.trim() || undefined,
     };
@@ -261,6 +268,18 @@ export class RecetasService {
     return items.map(serializarReceta);
   }
 
+  /** Puntos para el mapa: recetas validadas con coordenadas (solo los campos que el mapa necesita). */
+  async puntos(idEstado?: number) {
+    const qb = this.recetas.createQueryBuilder('r').leftJoinAndSelect('r.estado', 'e')
+      .where("r.estadoValidacion = 'validada'");
+    if (idEstado) qb.andWhere('r.idEstado = :idEstado', { idEstado });
+    return (await qb.getMany()).map(serializarReceta).map((r) => ({
+      idReceta: r.idReceta, nombreReceta: r.nombreReceta, latitud: r.latitud, longitud: r.longitud,
+      municipio: r.municipio, cveMun: r.cveMun, localidad: r.localidad, urlImagen: r.urlImagen,
+      estado: r.estado, tipoPlatillo: r.tipoPlatillo,
+    }));
+  }
+
   /** Regiones registradas en recetas validadas (opcionalmente de un estado). */
   async regiones(idEstado?: number) {
     const qb = this.recetas.createQueryBuilder('r').select(campoPrep('region'), 'region').addSelect('COUNT(*)', 'total')
@@ -281,6 +300,8 @@ export class RecetasController {
 
   @Get('catalogos') catalogos() { return { dificultades: DIFICULTADES, tiposPlatillo: TIPOS_PLATILLO }; }
 
+  @Get('mapa') puntos(@Query('estado') estado?: string) { return this.svc.puntos(Number(estado) || undefined); }
+
   @Get('regiones') regiones(@Query('estado') estado?: string) { return this.svc.regiones(Number(estado) || undefined); }
 
   @Get('pendientes') @UseGuards(AdminGuard) pendientes() { return this.svc.pendientes(); }
@@ -288,10 +309,10 @@ export class RecetasController {
   @Get(':id') @UseGuards(OptionalAuthGuard)
   detalle(@Param('id', ParseIntPipe) id: number, @CurrentUser() s: SesionUsuario | null) { return this.svc.detalle(id, s); }
 
-  @Post() @UseGuards(AuthGuard)
+  @Post() @UseGuards(PortadorGuard)
   crear(@Body() dto: RecetaDto, @CurrentUser() s: SesionUsuario) { return this.svc.crear(dto, s); }
 
-  @Put(':id') @UseGuards(AuthGuard)
+  @Put(':id') @UseGuards(PortadorGuard)
   actualizar(@Param('id', ParseIntPipe) id: number, @Body() dto: RecetaDto, @CurrentUser() s: SesionUsuario) {
     return this.svc.actualizar(id, dto, s);
   }

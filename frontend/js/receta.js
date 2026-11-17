@@ -1,9 +1,10 @@
 // Pantalla: Receta (detalle)
 import { api, esc, parametro, sesion } from "./api.js";
-import { activarFavoritos, avatar, estadoVacio, mostrarAlerta, tarjetaReceta } from "./componentes.js";
+import { activarFavoritos, avatar, estadoVacio, fotoVacia, mostrarAlerta, tarjetaReceta } from "./componentes.js";
 import { icon } from "./icons.js";
 import { montarLayout, ruta } from "./layout.js";
 import { favoritos } from "./local.js";
+import { crearAtlas } from "./mapa-mexico.js";
 
 montarLayout("recetas");
 const main = document.querySelector("[data-receta]");
@@ -83,6 +84,17 @@ async function pintarComentarios(id) {
     try {
       await api(`/recetas/${id}/comentarios`, { metodo: "POST", cuerpo: { comentario: e.target.comentario.value } });
       pintarComentarios(id);
+
+  // Mapa de la localidad de origen
+  const cajaMapa = main.querySelector("[data-mapa-receta]");
+  if (cajaMapa) {
+    const atlas = crearAtlas(cajaMapa, { soloEstado: r.estado.idEstado });
+    atlas.seleccionarEstado(r.estado.idEstado, { acercar: false }).then(() => {
+      if (r.cveMun) atlas.seleccionarMunicipio(r.cveMun, { acercar: false });
+      atlas.mapa.setView([r.latitud, r.longitud], 9);
+      atlas.marcar(r.latitud, r.longitud, r.localidad);
+    });
+  }
     } catch (err) {
       mostrarAlerta(caja.querySelector("[data-alerta-comentario]"), err.message);
       btn.disabled = false;
@@ -115,7 +127,7 @@ async function iniciar() {
     ${aviso}
     <section class="receta-portada">
       <figure class="receta-portada__foto" style="margin:0">
-        ${r.urlImagen ? `<img src="${esc(r.urlImagen)}" alt="${esc(r.nombreReceta)}">` : `<div class="sin-foto">${icon("cooking-pot", 40)}</div>`}
+        ${r.urlImagen ? `<img src="${esc(r.urlImagen)}" alt="${esc(r.nombreReceta)}">` : `<div class="sin-foto">${fotoVacia(r, 64)}</div>`}
         ${r.pieFoto ? `<figcaption>${esc(r.pieFoto)}</figcaption>` : ""}
       </figure>
       <div class="receta-ficha">
@@ -125,7 +137,7 @@ async function iniciar() {
         ${r.descripcion ? `<p class="texto">${esc(r.descripcion)}</p>` : ""}
         <div class="receta-autor">
           ${avatar(nombreAutor, 46)}
-          <div><strong>${esc(nombreAutor)}</strong><a href="perfil.html?id=${r.autor.idUs}">Ver perfil y sus recetas →</a></div>
+          <div><strong>${esc(nombreAutor)}</strong><span class="texto-xs" style="color:var(--c-terracota)">Portador(a) de saberes</span> · <a href="perfil.html?id=${r.autor.idUs}">Ver perfil y sus recetas →</a></div>
         </div>
         <dl class="receta-datos" style="margin:0">
           <div><dt>Raciones</dt><dd>${r.porciones ? `${r.porciones} ${r.porciones === 1 ? "persona" : "personas"}` : "—"}</dd></div>
@@ -147,6 +159,12 @@ async function iniciar() {
             <button type="button" data-menos aria-label="Menos porciones">−</button>/<button type="button" data-mas aria-label="Más porciones">+</button></div>` : ""}
           <ul class="lista-ingredientes" data-ingredientes>${htmlIngredientes(r, porciones)}</ul>
         </div>
+        ${r.latitud != null ? `<div class="panel donde">
+            <h3>¿Dónde se cocina?</h3>
+            <div class="mapa-chico" data-mapa-receta></div>
+            <p class="texto-sm">${esc([r.localidad, r.municipio && r.municipio !== r.localidad ? `municipio de ${r.municipio}` : null, estado].filter(Boolean).join(", "))}</p>
+            <p class="texto-xs">Ubicación aproximada de la localidad de origen.</p>
+          </div>` : ""}
         ${r.consejo ? `<div class="consejo">${icon("cooking-pot", 24)}<h3>Un consejo de ${esc(primerNombre)}</h3><p>${esc(r.consejo)}</p></div>` : ""}
       </aside>
 
@@ -201,6 +219,17 @@ async function iniciar() {
   main.querySelector("[data-mas]")?.addEventListener("click", () => cambiar(1));
 
   pintarComentarios(id);
+
+  // Mapa de la localidad de origen
+  const cajaMapa = main.querySelector("[data-mapa-receta]");
+  if (cajaMapa) {
+    const atlas = crearAtlas(cajaMapa, { soloEstado: r.estado.idEstado });
+    atlas.seleccionarEstado(r.estado.idEstado, { acercar: false }).then(() => {
+      if (r.cveMun) atlas.seleccionarMunicipio(r.cveMun, { acercar: false });
+      atlas.mapa.setView([r.latitud, r.longitud], 9);
+      atlas.marcar(r.latitud, r.longitud, r.localidad);
+    });
+  }
 
   // Otras recetas: primero del mismo estado, luego de otros
   const otras = main.querySelector("[data-otras]");

@@ -5,6 +5,7 @@ import { mostrarAlerta } from "./componentes.js";
 import { hydrateIcons, icon } from "./icons.js";
 import { montarLayout, ruta } from "./layout.js";
 import { borradores } from "./local.js";
+import { cargarMunicipios, contiene, crearAtlas } from "./mapa-mexico.js";
 
 montarLayout("publicar");
 if (!requerirSesion()) throw new Error("Sin sesión");
@@ -19,6 +20,25 @@ let estados = [];
 
 $("[data-ruta]").outerHTML = ruta([["Inicio", "index.html"], ["Mi perfil", "mi-perfil.html"], [idReceta ? "Editar receta" : "Publicar receta"]]);
 const u = sesion.usuario;
+
+/* ---------- Solo portadores de saberes (tipoUsu 3) y administradores (1) publican ---------- */
+if (u.tipoUsu === 2) {
+  $("[data-puerta]").hidden = false;
+  document.querySelector(".editor").hidden = true;
+  $("[data-estado-doc]").hidden = true;
+  $("[data-titulo]").textContent = "Comparte lo que se cocina en tu comunidad.";
+  $("[data-hacerme-portador]").addEventListener("click", async (e) => {
+    e.target.disabled = true;
+    try {
+      const r = await api("/usuarios/yo/portador", { metodo: "POST" });
+      sesion.guardar(r, true);
+      location.reload();
+    } catch (err) {
+      mostrarAlerta($("[data-alerta-puerta]"), err.message);
+      e.target.disabled = false;
+    }
+  });
+}
 $("[data-publicando]").textContent = `Publicando como ${[u.nombre, u.apPat].filter(Boolean).join(" ")}`;
 form.dificultad.insertAdjacentHTML("beforeend", DIFICULTADES.map((d) => `<option>${d}</option>`).join(""));
 form.tipoPlatillo.insertAdjacentHTML("beforeend", TIPOS_PLATILLO.map((d) => `<option>${d}</option>`).join(""));
@@ -122,21 +142,62 @@ const zona = $("[data-subir]");
 zona.addEventListener("drop", (e) => { e.preventDefault(); subir(e.dataTransfer.files[0]); });
 $("[data-quitar-foto]").addEventListener("click", () => { urlImagen = ""; pintarFoto(); });
 
-/* ---------- Lugar ---------- */
+/* ---------- Lugar: estado, municipio (INEGI) y punto en el mapa ---------- */
 const nombreEstado = () => estados.find((e) => e.idEstado === Number(form.idEstado.value))?.nomEstado ?? "";
+let municipios = [];
+// Si la cuenta aún no es de portador, el editor está oculto: no se crea el mapa (Leaflet necesita un contenedor visible).
+const atlas = u.tipoUsu === 2
+  ? { verPais() {}, async seleccionarEstado() {}, seleccionarMunicipio() {}, marcar() {} }
+  : crearAtlas($("[data-mapa-elegir]"), { rueda: true, alClicMapa: (p) => marcarPunto(p.lat, p.lng) });
+
 async function cargarRegiones() {
   const nombre = nombreEstado();
   const api_ = nombre ? await api(`/recetas/regiones?estado=${form.idEstado.value}`).catch(() => []) : [];
   $("#regiones").innerHTML = (nombre ? regionesDe(nombre, api_) : []).map((r) => `<option value="${esc(r)}">`).join("");
 }
-function pintarUbicacion() {
-  const texto = [form.localidad.value.trim(), nombreEstado()].filter(Boolean).join(", ");
-  $("[data-ubicacion]").hidden = !form.localidad.value.trim();
-  $("[data-ubicacion-texto]").textContent = texto;
+async function cargarMunicipiosEstado(cveElegida = "") {
+  const id = Number(form.idEstado.value);
+  form.cveMun.innerHTML = `<option value="">${id ? "Cargando municipios…" : "Primero elige el estado"}</option>`;
+  if (!id) { atlas.verPais(); return; }
+  municipios = (await cargarMunicipios(id)).features.map((f) => ({ cve: f.properties.cve, nombre: f.properties.nombre, geom: f.geometry }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  form.cveMun.innerHTML = `<option value="">Elige el municipio (${municipios.length})</option>`
+    + municipios.map((m) => `<option value="${m.cve}">${esc(m.nombre)}</option>`).join("");
+  form.cveMun.value = cveElegida;
+  await atlas.seleccionarEstado(id, { acercar: !cveElegida });
+  if (cveElegida) atlas.seleccionarMunicipio(cveElegida);
+  pintarUbicacion();
 }
-form.idEstado.addEventListener("change", () => { cargarRegiones(); pintarUbicacion(); });
+function marcarPunto(lat, lng) {
+  const m = municipios.find((x) => contiene(x.geom, lng, lat));
+  if (!m) { mostrarAlerta(alerta, "Ese punto está fuera del estado elegido. Marca la localidad dentro del estado."); return; }
+  alerta.hidden = true;
+  form.latitud.value = lat.toFixed(4);
+  form.longitud.value = lng.toFixed(4);
+  form.cveMun.value = m.cve;
+  atlas.seleccionarMunicipio(m.cve, { acercar: false });
+  pintarUbicacion(); revisar();
+}
+function pintarUbicacion() {
+  const mun = municipios.find((m) => m.cve === form.cveMun.value)?.nombre;
+  const texto = [form.localidad.value.trim(), mun && mun !== form.localidad.value.trim() ? mun : null, nombreEstado()].filter(Boolean).join(", ");
+  $("[data-ubicacion]").hidden = !form.localidad.value.trim() && !mun;
+  $("[data-ubicacion-texto]").textContent = texto;
+  const lat = Number(form.latitud.value); const lng = Number(form.longitud.value);
+  atlas.marcar(form.latitud.value ? lat : null, form.longitud.value ? lng : null, form.localidad.value.trim());
+}
+form.idEstado.addEventListener("change", () => {
+  form.latitud.value = ""; form.longitud.value = "";
+  cargarRegiones(); cargarMunicipiosEstado();
+});
+form.cveMun.addEventListener("change", () => {
+  if (form.cveMun.value) atlas.seleccionarMunicipio(form.cveMun.value);
+  pintarUbicacion();
+});
 form.localidad.addEventListener("input", pintarUbicacion);
-$("[data-cambiar-ubicacion]").addEventListener("click", () => form.localidad.focus());
+form.latitud.addEventListener("change", pintarUbicacion);
+form.longitud.addEventListener("change", pintarUbicacion);
+$("[data-cambiar-ubicacion]").addEventListener("click", () => $("[data-mapa-elegir]").scrollIntoView({ behavior: "smooth", block: "center" }));
 $("#nombreReceta").addEventListener("input", (e) => {
   $("[data-contador-nombre]").textContent = `${e.target.value.length} de 30 caracteres.`;
 });
@@ -151,6 +212,8 @@ function leer() {
     idEstado: num(form.idEstado.value),
     region: form.region.value.trim() || undefined,
     localidad: form.localidad.value.trim() || undefined,
+    cveMun: form.cveMun.value || undefined,
+    municipio: municipios.find((m) => m.cve === form.cveMun.value)?.nombre,
     latitud: num(form.latitud.value),
     longitud: num(form.longitud.value),
     ingredientes: [...cajaIngredientes.children].map((f) => ({
@@ -181,7 +244,7 @@ function llenar(d) {
   (d.ingredientes?.length ? d.ingredientes : [{}, {}, {}]).forEach((i) => cajaIngredientes.appendChild(filaIngrediente(i)));
   cajaPasos.innerHTML = "";
   (d.pasos?.length ? d.pasos : [{}, {}]).forEach((p) => cajaPasos.appendChild(filaPaso(p)));
-  numerar(); pintarFoto(); cargarRegiones(); pintarUbicacion();
+  numerar(); pintarFoto(); cargarRegiones(); cargarMunicipiosEstado(d.cveMun ?? "");
 }
 
 /* ---------- Lista "Antes de publicar" ---------- */
@@ -190,7 +253,7 @@ function revisar() {
   const ok = {
     historia: d.nombreReceta.length >= 3 && d.descripcion.length >= 20,
     foto: Boolean(d.urlImagen),
-    lugar: Boolean(d.idEstado && d.localidad),
+    lugar: Boolean(d.idEstado && d.cveMun && d.localidad),
     pasos: d.ingredientes.some((i) => i.nombre && i.cantidad) && d.pasos.length > 0,
     detalles: Boolean(d.porciones && d.tiempoTotal),
   };
@@ -218,7 +281,7 @@ form.addEventListener("submit", async (e) => {
   const faltan = [];
   if (!ok.historia) faltan.push("el nombre y una descripción de al menos 20 caracteres");
   if (!ok.foto) faltan.push("una fotografía");
-  if (!ok.lugar) faltan.push("el estado y la localidad");
+  if (!ok.lugar) faltan.push("el estado, el municipio y la localidad");
   if (!ok.pasos) faltan.push("ingredientes con cantidad y al menos un paso");
   if (!ok.detalles) faltan.push("porciones y tiempo total");
   if (!d.dificultad || !d.tipoPlatillo) faltan.push("la dificultad y el tipo de platillo");

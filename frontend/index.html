@@ -6,6 +6,7 @@
   <title>Explorar México · SIGEPA MX</title>
   <meta name="description" content="Un atlas vivo de la cocina mexicana: recetas, lugares y saberes compartidos por sus comunidades.">
   <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -41,20 +42,13 @@
       </div>
       <div class="atlas">
         <div class="atlas__mapa">
-          <div class="mapa" data-mapa>
-            <div class="mapa__lienzo" data-lienzo></div>
-            <div class="mapa__seleccion" data-seleccion hidden></div>
-            <div class="mapa__tooltip" data-tooltip hidden></div>
-            <div class="mapa__controles">
-              <button type="button" aria-label="Acercar" data-zoom="1">＋</button>
-              <button type="button" aria-label="Alejar" data-zoom="-1">−</button>
-            </div>
-            <p class="mapa__escala">0 ━━━━━ 500 km</p>
-          </div>
+          <div class="mapa" data-mapa role="application" aria-label="Mapa interactivo de los estados y municipios de México"></div>
           <div class="leyenda">
             <span class="leyenda__item"><span class="leyenda__muestra" style="background:var(--c-mapa-estado)"></span>Estados de México</span>
             <span class="leyenda__item"><span class="leyenda__muestra" style="background:var(--c-terracota)"></span>Estado seleccionado</span>
-            <span>Selecciona un estado para explorar</span>
+            <span class="leyenda__item"><span class="leyenda__muestra leyenda__muestra--linea"></span>Municipios</span>
+            <span class="leyenda__item"><span class="leyenda__muestra leyenda__muestra--punto"></span>Receta compartida</span>
+            <button class="enlace-plano" style="font-size:11px;margin-left:auto" type="button" data-ver-pais>Ver todo México</button>
           </div>
         </div>
 
@@ -71,7 +65,13 @@
           <p class="texto" data-descripcion></p>
           <div class="chips" data-regiones></div>
           <a class="btn btn--primario" href="#" data-explorar><i data-icon="arrow-up-right"></i><span></span></a>
-          <p class="texto-xs" style="line-height:1.6">Cada receta conserva su lugar de origen y la voz de quien la comparte.</p>
+          <div class="municipio-card" data-municipio hidden>
+            <p class="eyebrow eyebrow--gris">MUNICIPIO</p>
+            <h4 data-mun-nombre></h4>
+            <p class="texto-sm" data-mun-texto></p>
+            <a class="enlace" href="#" data-mun-enlace>Ver recetas del municipio →</a>
+          </div>
+          <p class="texto-xs" style="line-height:1.6">Cada receta conserva su lugar de origen y la voz de quien la comparte. Toca un municipio para ver lo que se cocina ahí.</p>
         </div>
       </div>
     </section>
@@ -96,6 +96,8 @@
     </section>
   </main>
 
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
   <script type="module" src="js/inicio.js"></script>
 </body>
 </html>
