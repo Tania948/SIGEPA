@@ -1,9 +1,9 @@
 // Pantalla: Inicio · Explorar México
 import { api, esc } from "./api.js";
+import { infoEstado } from "./catalogos.js";
 import { activarFavoritos, estadoVacio, tarjetaReceta } from "./componentes.js";
 import { montarLayout } from "./layout.js";
-import { crearMapa } from "./mapa.js";
-import { infoEstado } from "./catalogos.js";
+import { crearAtlas } from "./mapa-mexico.js";
 
 montarLayout("explorar");
 
@@ -12,34 +12,45 @@ const select = $("[data-estado-select]");
 const destacadas = $("[data-destacadas]");
 activarFavoritos(destacadas);
 
-// Sugerencias de búsqueda
 document.querySelectorAll("[data-sugerencia]").forEach((b) =>
   b.addEventListener("click", () => { location.href = `recetas.html?q=${encodeURIComponent(b.dataset.sugerencia)}`; }));
 $("[data-ver-estados]").addEventListener("click", (e) => { e.preventDefault(); select.focus(); select.showPicker?.(); });
 
 let estados = [];
-const porNombre = (n) => estados.find((e) => e.nomEstado === n);
+let puntos = [];
+const porId = (id) => estados.find((e) => e.idEstado === Number(id));
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+const recetasMun = (cve) => puntos.filter((p) => p.cveMun === cve);
 
-const mapa = crearMapa($("[data-mapa]"), {
-  alSeleccionar: (nombre) => { const e = porNombre(nombre); if (e) elegir(e.idEstado); },
-  textoTooltip: (nombre) => {
-    const e = porNombre(nombre);
-    if (!e) return nombre;
-    return `${nombre} · ${e.totalRecetas} ${e.totalRecetas === 1 ? "receta" : "recetas"}`;
-  },
+const atlas = crearAtlas($("[data-mapa]"), {
+  alSeleccionarEstado: (id) => elegir(id),
+  alSeleccionarMunicipio: ({ cve, nombre, idEstado }) => elegirMunicipio(cve, nombre, idEstado),
+  textoEstado: (id) => { const e = porId(id); return e ? `${e.nomEstado} · ${plural(e.totalRecetas, "receta", "recetas")}` : ""; },
+  textoMunicipio: (cve, nombre) => `${nombre} · ${plural(recetasMun(cve).length, "receta", "recetas")}`,
 });
+$("[data-ver-pais]").addEventListener("click", () => { atlas.verPais(); $("[data-municipio]").hidden = true; });
+
+function elegirMunicipio(cve, nombre, idEstado) {
+  atlas.seleccionarMunicipio(cve);
+  const lista = recetasMun(cve);
+  const caja = $("[data-municipio]");
+  caja.hidden = false;
+  $("[data-mun-nombre]").textContent = nombre;
+  $("[data-mun-texto]").textContent = lista.length
+    ? `${plural(lista.length, "receta compartida", "recetas compartidas")}: ${lista.map((r) => r.nombreReceta).join(", ")}.`
+    : "Todavía no hay recetas de este municipio. ¿Conoces una?";
+  const enlace = $("[data-mun-enlace]");
+  enlace.textContent = lista.length ? "Ver recetas del municipio →" : "Compartir una receta →";
+  enlace.href = lista.length ? `recetas.html?estado=${idEstado}&mun=${cve}&munNombre=${encodeURIComponent(nombre)}` : "publicar.html";
+}
 
 async function elegir(idEstado) {
   select.value = String(idEstado);
-  const resumen = estados.find((e) => e.idEstado === Number(idEstado));
-  mapa.seleccionar(resumen?.nomEstado);
+  $("[data-municipio]").hidden = true;
   history.replaceState(null, "", `?estado=${idEstado}`);
+  atlas.seleccionarEstado(idEstado);
 
-  const [estado, recetas] = await Promise.all([
-    api(`/estados/${idEstado}`),
-    api(`/recetas?estado=${idEstado}&limit=3`),
-  ]);
-
+  const [estado, recetas] = await Promise.all([api(`/estados/${idEstado}`), api(`/recetas?estado=${idEstado}&limit=3`)]);
   const info = infoEstado(estado.nomEstado);
   $("[data-zona]").textContent = info.zona;
   $("[data-nombre-estado]").textContent = estado.nomEstado;
@@ -62,15 +73,15 @@ async function elegir(idEstado) {
 
 async function iniciar() {
   try {
-    estados = await api("/estados");
+    [estados, puntos] = await Promise.all([api("/estados"), api("/recetas/mapa")]);
   } catch (err) {
     destacadas.innerHTML = estadoVacio(err.message);
     return;
   }
+  atlas.mostrarPuntos(puntos);
   select.innerHTML = estados.map((e) => `<option value="${e.idEstado}">${esc(e.nomEstado)}</option>`).join("");
   select.addEventListener("change", () => elegir(select.value));
-  const inicial = Number(new URLSearchParams(location.search).get("estado"))
-    || porNombre("Oaxaca")?.idEstado || estados[0]?.idEstado;
-  if (inicial) elegir(inicial);
+  const inicial = Number(new URLSearchParams(location.search).get("estado")) || 20;
+  elegir(inicial);
 }
 iniciar();

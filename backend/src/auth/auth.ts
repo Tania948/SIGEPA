@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
-import { IsBoolean, IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
 import { TipoUsuario, Usuario } from '../entities';
@@ -42,6 +42,18 @@ export class OptionalAuthGuard implements CanActivate {
   }
 }
 
+/** Portadores de saberes (tipoUsu = 3) y administradores: son quienes publican recetas. */
+@Injectable()
+export class PortadorGuard extends AuthGuard {
+  canActivate(ctx: ExecutionContext) {
+    super.canActivate(ctx);
+    const t = ctx.switchToHttp().getRequest().user.tipoUsu;
+    if (t !== TipoUsuario.PORTADOR && t !== TipoUsuario.ADMINISTRADOR)
+      throw new ForbiddenException('Solo los portadores de saberes pueden publicar recetas.');
+    return true;
+  }
+}
+
 /** Solo administradores (tipoUsu = 1): validan recetas y moderan comentarios. */
 @Injectable()
 export class AdminGuard extends AuthGuard {
@@ -66,6 +78,8 @@ export class RegistroDto {
   @Matches(/^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d)/, { message: 'La contraseña necesita al menos una letra y un número.' })
   contrasenia: string;
   @IsOptional() @IsString() @MaxLength(40) usuario?: string;
+  /** "portador" = portador de saberes (publica recetas); "usuario" = explora y guarda. */
+  @IsOptional() @IsIn(['usuario', 'portador']) rol?: 'usuario' | 'portador';
 }
 
 export class RestablecerDto {
@@ -87,7 +101,7 @@ export class LoginDto {
 export class AuthService {
   constructor(@InjectRepository(Usuario) private usuarios: Repository<Usuario>, private jwt: JwtService) {}
 
-  private emitir(u: Usuario, recordar = false) {
+  emitir(u: Usuario, recordar = false) {
     const payload: SesionUsuario = { idUs: u.idUs, tipoUsu: u.tipoUsu, nombre: u.nombre };
     return {
       token: this.jwt.sign(payload, { expiresIn: recordar ? '30d' : '1d' }),
@@ -111,7 +125,8 @@ export class AuthService {
     if (await this.usuarios.exist({ where: { usuario } })) usuario = `${usuario}${Date.now() % 100000}`;
     const u = this.usuarios.create({
       ...this.separarNombre(dto.nombreCompleto), email, usuario,
-      contrasenia: await bcrypt.hash(dto.contrasenia, 10), tipoUsu: TipoUsuario.REGULAR,
+      contrasenia: await bcrypt.hash(dto.contrasenia, 10),
+      tipoUsu: dto.rol === 'portador' ? TipoUsuario.PORTADOR : TipoUsuario.REGULAR,
     });
     return this.emitir(await this.usuarios.save(u));
   }
@@ -190,5 +205,6 @@ export class AuthController {
   imports: [TypeOrmModule.forFeature([Usuario])],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

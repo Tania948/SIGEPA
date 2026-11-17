@@ -2,6 +2,10 @@
 import { esc, sesion } from "./api.js";
 import { hydrateIcons, icon } from "./icons.js";
 import { avatar as avatarIniciales } from "./componentes.js";
+import { IDIOMAS, aplicarIdioma, idiomaActual } from "./idioma.js";
+
+const opcionesIdioma = () => Object.entries(IDIOMAS).map(([clave, i]) =>
+  `<button type="button" class="idioma__opcion" data-idioma="${clave}" lang="${clave}" aria-pressed="${clave === idiomaActual()}">${i.nombre}</button>`).join("");
 
 const DESTINOS = [
   { id: "explorar", texto: "Explorar México", href: "index.html" },
@@ -44,6 +48,12 @@ function htmlNav(activa) {
         <img src="assets/img/logo-sigepa.png" alt="SIGEPA MX · Patrimonio gastronómico mexicano" width="200" height="90">
       </a>
       <nav class="nav__destinos" aria-label="Principal">${destinos}</nav>
+      <div class="idioma" data-sin-traducir>
+        <button class="idioma__btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Idioma / T'aan / Tlahtolli" data-idioma-btn>
+          ${icon("languages", 18)}<span data-idioma-actual>${IDIOMAS[idiomaActual()].corto}</span>${icon("chevron-down", 14)}
+        </button>
+        <div class="idioma__menu" hidden data-idioma-menu>${opcionesIdioma()}</div>
+      </div>
       <a class="nav__publicar" href="publicar.html">＋ Publicar receta</a>
       ${cuenta}
     </header>`;
@@ -85,6 +95,11 @@ function htmlMenu(activa) {
         ${d("mi-perfil.html", "user-round", "Mi perfil / Mis recetas", "perfil")}
         ${d("mi-perfil.html?pestana=favoritos", "bookmark", "Mis favoritos", "favoritos")}
         ${d("sobre.html", "info", "Quiénes somos", "sobre")}
+      </div>
+      <hr class="separador">
+      <div class="menu-lateral__grupo">
+        <p class="eyebrow eyebrow--gris">IDIOMA</p>
+        <div class="idioma__lista" data-sin-traducir>${opcionesIdioma()}</div>
       </div>
       ${acceso}
     </aside>`;
@@ -128,6 +143,20 @@ export function montarLayout(activa) {
     });
     document.addEventListener("click", () => { menuCuenta.hidden = true; btnCuenta.setAttribute("aria-expanded", "false"); });
   }
+  const btnIdioma = document.querySelector("[data-idioma-btn]");
+  const menuIdioma = document.querySelector("[data-idioma-menu]");
+  btnIdioma.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuIdioma.hidden = !menuIdioma.hidden;
+    btnIdioma.setAttribute("aria-expanded", String(!menuIdioma.hidden));
+  });
+  document.addEventListener("click", () => { menuIdioma.hidden = true; btnIdioma.setAttribute("aria-expanded", "false"); });
+  document.querySelectorAll("[data-idioma]").forEach((b) => b.addEventListener("click", () => {
+    aplicarIdioma(b.dataset.idioma);
+    menuIdioma.hidden = true;
+  }));
+  aplicarIdioma();
+
   document.querySelectorAll("[data-salir]").forEach((b) => b.addEventListener("click", () => {
     sesion.cerrar();
     location.href = "index.html";

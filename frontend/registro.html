@@ -24,6 +24,17 @@
       <p class="texto">Crea tu cuenta para guardar recetas y compartir los saberes de tu cocina. Los campos con * son obligatorios.</p>
       <div class="alerta" role="alert" hidden data-alerta></div>
       <div class="acceso__campos" style="gap:22px">
+        <fieldset class="campo" style="border:0;margin:0;padding:0">
+          <legend class="campo__etiqueta" style="margin-bottom:9px">¿Cómo quieres participar? *</legend>
+          <div class="roles">
+            <label class="rol"><input type="radio" name="rol" value="portador" checked>
+              <strong><i data-icon="heart-handshake" data-size="18"></i>Portador o portadora de saberes</strong>
+              <span>Comparto recetas de mi familia o mi comunidad, con su lugar de origen y su historia.</span></label>
+            <label class="rol"><input type="radio" name="rol" value="usuario">
+              <strong><i data-icon="user-round" data-size="18"></i>Usuario</strong>
+              <span>Quiero explorar el mapa, guardar recetas favoritas y comentar.</span></label>
+          </div>
+        </fieldset>
         <div class="campo">
           <label for="nombre">Nombre completo *</label>
           <div class="entrada"><input id="nombre" name="nombreCompleto" autocomplete="name" placeholder="Ana López" required maxlength="60"></div>
@@ -86,9 +97,9 @@
       const btn = form.querySelector("[type=submit]");
       btn.disabled = true;
       try {
-        const r = await api("/auth/registro", { metodo: "POST", cuerpo: { nombreCompleto: d.nombreCompleto.trim(), email: d.email.trim(), contrasenia: d.contrasenia } });
+        const r = await api("/auth/registro", { metodo: "POST", cuerpo: { nombreCompleto: d.nombreCompleto.trim(), email: d.email.trim(), contrasenia: d.contrasenia, rol: d.rol } });
         sesion.guardar(r, true);
-        location.href = volver === "index.html" ? "mi-perfil.html" : volver;
+        location.href = volver !== "index.html" ? volver : d.rol === "portador" ? "publicar.html" : "mi-perfil.html";
       } catch (err) {
         mostrarAlerta(alerta, err.message);
         btn.disabled = false;

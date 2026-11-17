@@ -2,7 +2,7 @@
 import { api, esc, parametro, requerirSesion, sesion } from "./api.js";
 import { TIPOS_PLATILLO } from "./catalogos.js";
 import {
-  activarFavoritos, activarOpciones, avatar, cargando, estadoVacio, mostrarAlerta, pildoraMenu, tarjetaReceta,
+  activarFavoritos, activarOpciones, avatar, cargando, estadoVacio, insigniaRol, mostrarAlerta, pildoraMenu, tarjetaReceta,
 } from "./componentes.js";
 import { icon } from "./icons.js";
 import { montarLayout, ruta } from "./layout.js";
@@ -11,7 +11,9 @@ import { borradores, favoritos } from "./local.js";
 montarLayout("perfil");
 if (!requerirSesion()) throw new Error("Sin sesión");
 const $ = (s) => document.querySelector(s);
-const pestana = parametro("pestana") === "favoritos" ? "favoritos" : "recetas";
+// Los usuarios (tipoUsu 2) no publican: su espacio son los favoritos.
+const esUsuario = sesion.usuario?.tipoUsu === 2;
+const pestana = parametro("pestana") === "favoritos" || esUsuario ? "favoritos" : "recetas";
 
 $("[data-ruta]").outerHTML = ruta([["Inicio", "index.html"], ["Mi perfil", "mi-perfil.html"], [pestana === "favoritos" ? "Favoritos" : "Mis recetas"]]);
 document.querySelectorAll("[data-pestana]").forEach((a) => { if (a.dataset.pestana === pestana) a.setAttribute("aria-current", "page"); });
@@ -24,6 +26,7 @@ function pintarPerfil() {
   const nombre = [yo.nombre, yo.apPat, yo.apMat].filter(Boolean).join(" ");
   $("[data-avatar]").outerHTML = `<span data-avatar>${avatar(nombre, 108, "avatar--serif")}</span>`;
   $("[data-nombre]").textContent = nombre;
+  $("[data-nombre]").insertAdjacentHTML("beforebegin", `<div>${insigniaRol(yo.tipoUsu)}</div>`);
   $("[data-correo]").textContent = `${yo.email} · Solo tú puedes ver tu correo`;
   // Procedencia: el estado donde más recetas ha compartido (el diccionario no guarda dirección).
   const cuenta = {};
@@ -144,6 +147,16 @@ let estadosPorId = {};
     estadosPorId = Object.fromEntries(estados.map((e) => [e.idEstado, e.nomEstado]));
     pintarPerfil();
     pintarAportes();
+    if (yo.tipoUsu === 2) {
+      document.querySelector('[data-pestana="recetas"]').hidden = true;
+      $("[data-vista=\"favoritos\"]").insertAdjacentHTML("afterbegin", `
+        <section class="banda banda--crema">
+          <div class="banda__mensaje">${icon("heart-handshake", 30)}<div>
+            <h2>¿Guardas recetas de tu familia o tu comunidad?</h2>
+            <p>Hazte portador o portadora de saberes para compartirlas con su lugar de origen y su historia.</p></div></div>
+          <a class="btn btn--primario" href="publicar.html">Quiero compartir recetas</a>
+        </section>`);
+    }
     const enFav = [...new Map(recetasFav.map((r) => [r.estado.idEstado, r.estado.nomEstado])).entries()];
     pildoraMenu($("[data-filtro-estado]"), { etiqueta: "Todos los estados", opciones: [{ valor: "", texto: "Todos los estados" }, ...enFav.map(([v, t]) => ({ valor: String(v), texto: t }))], alCambiar: (v) => { filtrosFav.estado = v; pintarFavoritos(); } });
     pildoraMenu($("[data-filtro-tipo]"), { etiqueta: "Tipo de platillo", opciones: [{ valor: "", texto: "Todos los tipos" }, ...TIPOS_PLATILLO.map((t) => ({ valor: t, texto: t }))], alCambiar: (v) => { filtrosFav.tipo = v; pintarFavoritos(); } });

@@ -14,7 +14,7 @@
 
   <script type="module">
     import { api, esc, parametro } from "./js/api.js";
-    import { activarFavoritos, avatar, estadoVacio, pildoraMenu, tarjetaReceta } from "./js/componentes.js";
+    import { activarFavoritos, avatar, estadoVacio, insigniaRol, pildoraMenu, tarjetaReceta } from "./js/componentes.js";
     import { icon } from "./js/icons.js";
     import { montarLayout, ruta } from "./js/layout.js";
 
@@ -31,9 +31,10 @@
           ${avatar(nombre, 152, "avatar--serif")}
           <div class="perfil-card__datos">
             <p class="eyebrow">VOCES DE NUESTRA COCINA</p>
+            <div>${insigniaRol(p.tipoUsu)}</div>
             <h1>${esc(nombre)}</h1>
             ${p.estadoPrincipal ? `<p class="perfil-card__lugar">${icon("map-pin", 17)}${esc(p.estadoPrincipal)}</p>` : ""}
-            <p class="texto">${p.totalRecetas
+            <p class="texto">${p.tipoUsu === 2 ? "Explora y guarda las recetas de la comunidad." : p.totalRecetas
               ? `Comparte recetas ${p.estadoPrincipal ? `de ${esc(p.estadoPrincipal)} ` : ""}para que más personas puedan volver a prepararlas.`
               : "Todavía no tiene recetas publicadas."}</p>
             ${p.regiones.length ? `<div class="chips">${p.regiones.map((r) => `<a class="chip" href="recetas.html?region=${encodeURIComponent(r)}">Cocina de ${esc(r)}</a>`).join("")}</div>` : ""}
