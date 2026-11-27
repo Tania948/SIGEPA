@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Créditos · SIGEPA MX</title>
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#263b32">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina" style="gap:28px">
+    <div data-ruta></div>
+    <header>
+      <p class="eyebrow">CRÉDITOS Y LICENCIAS</p>
+      <h1 class="titulo-lg">Gracias a quienes hacen posible este mapa.</h1>
+      <p class="texto">SIGEPA usa fotografías, datos y programas de terceros con licencias libres. Aquí se reconoce a cada fuente.</p>
+    </header>
+
+    <section class="panel creditos">
+      <h2 class="titulo-md">Fotografías</h2>
+      <p class="texto-sm">Fotos reales de Wikimedia Commons. El autor y la licencia de cada una están en su página de Commons.</p>
+      <ul class="creditos__fotos" data-fotos></ul>
+    </section>
+
+    <section class="panel creditos">
+      <h2 class="titulo-md">Mapas y datos geográficos</h2>
+      <ul class="lista-puntos texto-sm">
+        <li><strong>Límites de estados y municipios:</strong> Marco Geoestadístico del INEGI, publicado por CONABIO (datos abiertos). Simplificados para la web.</li>
+        <li><strong>Mapa de calles:</strong> © colaboradores de <a class="enlace" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL).</li>
+        <li><strong>Calles y vista satelital alternas:</strong> Esri, Maxar, Earthstar Geographics y la comunidad de usuarios de GIS.</li>
+        <li><strong>Biblioteca de mapas:</strong> Leaflet (licencia BSD-2) y topojson-client (ISC).</li>
+      </ul>
+    </section>
+
+    <section class="panel creditos">
+      <h2 class="titulo-md">Diseño y programas</h2>
+      <ul class="lista-puntos texto-sm">
+        <li><strong>Tipografías:</strong> Inter (Rasmus Andersson) y Lora (Cyreal), con licencia SIL Open Font License 1.1.</li>
+        <li><strong>Íconos:</strong> Lucide (licencia ISC).</li>
+        <li><strong>Servidor:</strong> NestJS, TypeORM y MySQL/TiDB (licencias MIT y Apache 2.0).</li>
+        <li><strong>Precios de referencia del asistente:</strong> orden de magnitud de los monitoreos de Profeco y del SNIIM (Secretaría de Economía), 2026.</li>
+      </ul>
+    </section>
+
+    <section class="panel creditos">
+      <h2 class="titulo-md">Recetas</h2>
+      <p class="texto-sm">Cada receta pertenece a quien la comparte y a su comunidad, con la licencia que eligió. Las recetas de ejemplo fueron preparadas por el equipo de SIGEPA con fines académicos.</p>
+    </section>
+  </main>
+  <script type="module" src="js/paginas/creditos.js"></script>
+</body>
+</html>

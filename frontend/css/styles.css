@@ -3,7 +3,7 @@
    Valores tomados del diseño de Figma (marcos de 1440 px).
    ===================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap");
+@import url("fuentes.css");
 
 :root {
   --c-fondo: #f8f6f0;
@@ -935,3 +935,171 @@ body.sin-scroll { overflow: hidden; }
   .asis-panel { right: 0; bottom: 0; width: 100vw; max-width: 100vw; height: 88vh; border-radius: 16px 16px 0 0; }
 }
 @media print { .asis-boton, .asis-panel { display: none !important; } }
+
+/* =====================================================================
+   Versión final: fotos con crédito, receta (lengua, costo, licencia), modo cocina,
+   dictado, calendario de temporada, datos abiertos, créditos y modo sin conexión
+   ===================================================================== */
+
+/* ---------- Fotos de Wikimedia Commons ---------- */
+.credito-foto {
+  display: inline-block; margin-top: 8px; font-size: 11px; color: var(--c-gris); text-decoration: underline; text-underline-offset: 2px;
+}
+.credito-foto:hover { color: var(--c-verde); }
+.acceso__imagen { position: relative; }
+.acceso__imagen > .credito-foto, .sobre-hero figure > .credito-foto {
+  position: absolute; right: 12px; bottom: 12px; margin: 0; padding: 4px 8px; border-radius: 6px;
+  background: rgba(32, 35, 32, .65); color: #fff; text-decoration: none;
+}
+.sobre-hero figure { position: relative; }
+.foto-caida {
+  background: var(--c-crema) repeating-linear-gradient(45deg, transparent 0 14px, rgba(185, 81, 52, .06) 14px 28px);
+  min-height: 160px;
+}
+
+/* ---------- Receta ---------- */
+.receta-lengua { display: flex; align-items: center; gap: 8px; color: var(--c-terracota); font-size: 15px; }
+.receta-lengua span { font-family: var(--f-serif); font-style: italic; font-size: 18px; }
+.btn--icono-solo { width: 46px; padding: 0; justify-content: center; }
+.costo-estimado {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 16px; padding: 12px 14px;
+  border-radius: var(--r-md); background: var(--c-verde-claro); color: var(--c-verde); font-size: 14px;
+}
+.costo-estimado .texto-xs { flex-basis: 100%; color: var(--c-gris); }
+.licencia-receta {
+  display: flex; gap: 14px; margin-top: 32px; padding: 20px 22px; border: 1px solid var(--c-borde); border-radius: var(--r-lg);
+  background: var(--c-blanco); color: var(--c-verde);
+}
+.licencia-receta h3 { font-family: var(--f-serif); font-size: 19px; color: var(--c-tinta); margin-bottom: 6px; }
+.licencia-receta p { color: var(--c-tinta); font-size: 14px; line-height: 1.5; }
+.licencia-receta .texto-xs { color: var(--c-gris); margin-top: 6px; }
+
+/* ---------- Modo cocina ---------- */
+.cocina {
+  position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; background: var(--c-fondo);
+}
+.cocina__barra { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 24px; background: var(--c-nav); color: #fff; }
+.cocina__titulo { display: flex; align-items: center; gap: 8px; font-family: var(--f-serif); font-size: 20px; }
+.cocina__progreso { font-size: 13px; color: var(--c-nav-texto); margin-top: 2px; }
+.cocina__herramientas { display: flex; gap: 8px; }
+.cocina__btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; border-radius: var(--r-md);
+  border: 1px solid var(--c-nav-borde); color: #fff; font-weight: 600; font-size: 14px;
+}
+.cocina__btn[aria-pressed="true"] { background: var(--c-dorado); border-color: var(--c-dorado); color: var(--c-nav); }
+.cocina__cerrar { width: 42px; padding: 0; justify-content: center; }
+.cocina__barra-progreso { height: 6px; background: var(--c-borde); }
+.cocina__barra-progreso span { display: block; height: 100%; background: var(--c-terracota); transition: width .3s; }
+.cocina__paso { flex: 1; overflow-y: auto; width: min(900px, 100%); margin: 0 auto; padding: 48px 24px 24px; }
+.cocina__paso h2 { font-family: var(--f-serif); font-size: clamp(30px, 4vw, 44px); margin-bottom: 22px; }
+.cocina__paso > p { font-size: clamp(20px, 2.4vw, 28px); line-height: 1.55; }
+.cocina__ingredientes { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.cocina__ingredientes label { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: var(--r-md); background: var(--c-blanco); border: 1px solid var(--c-borde); font-size: 18px; }
+.cocina__ingredientes input { width: 22px; height: 22px; accent-color: var(--c-verde); }
+.cocina__ingredientes input:checked + * , .cocina__ingredientes label:has(input:checked) { color: var(--c-gris); text-decoration: line-through; }
+.cocina__tiempos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.cocina__temporizadores { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 0 24px; }
+.temporizador {
+  display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 100px;
+  background: var(--c-verde); color: #fff; font-size: 15px;
+}
+.temporizador strong { font-variant-numeric: tabular-nums; font-size: 18px; }
+.temporizador button { color: #fff; display: grid; place-items: center; }
+.temporizador--listo { background: var(--c-terracota); animation: latido 1s infinite; }
+@keyframes latido { 50% { transform: scale(1.05); } }
+.cocina__nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px 22px; }
+.cocina__nav .btn { height: 56px; padding: 0 26px; font-size: 17px; }
+.cocina__ayuda { flex: 1; text-align: center; color: var(--c-gris); font-size: 14px; }
+@media (max-width: 640px) {
+  .cocina__btn span { display: none; }
+  .cocina__btn { width: 42px; padding: 0; justify-content: center; }
+  .cocina__paso { padding-top: 28px; }
+  .cocina__nav .btn { padding: 0 16px; }
+  .cocina__ayuda { display: none; }
+}
+
+/* ---------- Dictado por voz ---------- */
+.entrada--dictado { position: relative; }
+.entrada--dictado textarea { padding-right: 52px; }
+.dictado {
+  position: absolute; right: 8px; top: 8px; width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--c-verde-claro); color: var(--c-verde);
+}
+.dictado:hover { background: var(--c-verde); color: #fff; }
+.dictado--escuchando { background: var(--c-terracota); color: #fff; animation: latido 1.2s infinite; }
+.guia__voz { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: 14px; }
+
+/* ---------- Publicar: enlace de foto y licencia ---------- */
+.foto-enlace { margin-top: 10px; }
+.foto-enlace summary { cursor: pointer; color: var(--c-verde); font-weight: 600; font-size: 14px; }
+.foto-enlace .entrada { margin-top: 10px; }
+.licencias { border: 0; padding: 0; margin: 0 0 6px; display: grid; gap: 10px; }
+.licencia-opcion {
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--c-borde);
+  border-radius: var(--r-md); background: var(--c-blanco); cursor: pointer;
+}
+.licencia-opcion:has(input:checked) { border-color: var(--c-verde); background: var(--c-verde-claro); }
+.licencia-opcion input { margin-top: 3px; accent-color: var(--c-verde); }
+.licencia-opcion span { display: flex; flex-direction: column; gap: 3px; }
+.licencia-opcion small { color: var(--c-gris); font-size: 13px; line-height: 1.4; }
+
+/* ---------- Calendario de temporada ---------- */
+.temporada-encabezado { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+.temporada-encabezado > div:first-child { max-width: 760px; display: flex; flex-direction: column; gap: 12px; }
+.temporada-filtros { min-width: 260px; }
+.meses { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.mes {
+  position: relative; flex: 0 0 auto; min-width: 66px; height: 44px; padding: 0 14px; border-radius: 100px;
+  border: 1px solid var(--c-borde); background: var(--c-blanco); font-weight: 600;
+}
+.mes--activo { background: var(--c-verde); border-color: var(--c-verde); color: #fff; }
+.mes__hoy { position: absolute; top: -8px; right: -4px; padding: 1px 6px; border-radius: 10px; background: var(--c-dorado); color: var(--c-nav); font-size: 10px; }
+.temporada { display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 28px; align-items: start; }
+.temporada__lista { display: flex; flex-direction: column; gap: 14px; }
+.temporada__resumen { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.temporada__resumen .enlace { display: inline-flex; align-items: center; gap: 6px; }
+.temporada__mapa { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; }
+.temporada__mapa .panel { display: flex; flex-direction: column; gap: 12px; }
+.mapa-temporada { height: 380px; border-radius: var(--r-lg); overflow: hidden; background: var(--c-mapa); }
+.ingrediente-temporada {
+  display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; border-radius: var(--r-lg);
+  background: var(--c-blanco); border: 1px solid var(--c-borde); cursor: pointer; transition: border-color .15s, box-shadow .15s;
+}
+.ingrediente-temporada:hover, .ingrediente-temporada:focus-visible { border-color: var(--c-verde); outline: none; }
+.ingrediente-temporada--activo { border-color: var(--c-verde); box-shadow: var(--sombra-panel); }
+.ingrediente-temporada header { display: flex; gap: 14px; align-items: center; }
+.ingrediente-temporada h2 { font-family: var(--f-serif); font-size: 21px; }
+.ingrediente-temporada .texto-sm { line-height: 1.5; }
+.icono-circulo--chico { width: 40px; height: 40px; }
+.cuidado { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: var(--r-md); background: #fbf3e3; color: #7a4a12; font-size: 13px; line-height: 1.45; }
+.estados-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.estados-chips .chip { font-size: 12px; }
+.lista-puntos { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.45; }
+@media (max-width: 1000px) {
+  .temporada { grid-template-columns: 1fr; }
+  .temporada__mapa { position: static; order: -1; }
+  .mapa-temporada { height: 300px; }
+}
+
+/* ---------- Sobre: innovación y datos abiertos ---------- */
+.innovacion { display: flex; flex-direction: column; gap: 26px; }
+.principios--cuatro { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) { .principios--cuatro { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .principios--cuatro { grid-template-columns: 1fr; } }
+.datos-abiertos { display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; padding: 32px; }
+.datos-abiertos > div:first-child { max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
+.datos-abiertos__botones { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ---------- Créditos ---------- */
+.creditos { display: flex; flex-direction: column; gap: 14px; padding: 28px; }
+.creditos__fotos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.creditos__fotos li { display: flex; gap: 14px; align-items: center; }
+.creditos__fotos img { width: 96px; height: 72px; object-fit: cover; border-radius: var(--r-md); flex-shrink: 0; }
+.creditos__fotos div { display: flex; flex-direction: column; gap: 3px; font-size: 13px; min-width: 0; }
+.creditos__fotos .texto-xs { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-gris); }
+
+/* ---------- Sin conexión e instalación ---------- */
+.aviso-conexion { padding: 10px 24px; background: var(--c-dorado); color: var(--c-nav); text-align: center; font-size: 14px; font-weight: 600; }
+.pie__instalar { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.receta-portada__foto.foto-caida, .sobre-hero figure.foto-caida { min-height: 430px; border-radius: var(--r-xl); }
+.acceso__imagen.foto-caida { min-height: 100%; }

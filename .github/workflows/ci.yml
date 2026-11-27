@@ -1,0 +1,53 @@
+# Integración continua: en cada push o pull request revisa que el proyecto compile,
+# pasen las pruebas y la API arranque contra un MySQL 8 real con los datos de ejemplo.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  probar:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -proot" --health-interval=5s --health-timeout=5s --health-retries=20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Pruebas unitarias
+        run: npm test
+      - name: Compilar
+        run: npm run build
+      - name: Revisar sintaxis del front
+        run: for f in $(find ../frontend/js ../frontend/sw.js -name '*.js'); do node --check "$f"; done
+      - name: Arrancar la API y revisar que responda
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: root
+          JWT_SECRET: ci
+          NODE_ENV: production
+        run: |
+          node dist/main.js > api.log 2>&1 &
+          for i in $(seq 1 40); do curl -fs localhost:3000/api/salud && break; sleep 2; done
+          curl -fs "localhost:3000/api/recetas?limit=1" | grep -q '"total":67'
+          curl -fs localhost:3000/api/temporadas > /dev/null
+          curl -fs -X POST localhost:3000/api/asistente -H 'content-type: application/json' -d '{"mensaje":"tengo 200 pesos"}' | grep -q presupuesto
+          curl -fs localhost:3000/ | grep -q SIGEPA
+      - if: failure()
+        run: cat api.log

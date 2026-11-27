@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Publicar receta · SIGEPA MX</title>
   <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#263b32">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -50,8 +53,27 @@
           </div>
           <div class="campo">
             <label for="descripcion">Descripción e historia *</label>
-            <div class="entrada"><textarea id="descripcion" name="descripcion" rows="4" maxlength="4000" required placeholder="¿De dónde viene esta receta? ¿Quién te la enseñó? ¿Cuándo la preparan?"></textarea></div>
-            <p class="ayuda">Comparte el origen familiar o comunitario de la receta con tus propias palabras.</p>
+            <div class="entrada"><textarea id="descripcion" name="descripcion" rows="4" maxlength="4000" required data-dictado placeholder="¿De dónde viene esta receta? ¿Quién te la enseñó? ¿Cuándo la preparan?"></textarea></div>
+            <p class="ayuda">Comparte el origen familiar o comunitario de la receta con tus propias palabras. <span data-ayuda-dictado hidden>Si prefieres contarla, toca el micrófono y habla.</span></p>
+          </div>
+          <div class="dos-columnas">
+            <div class="campo">
+              <label for="nombreLengua">Nombre en tu lengua originaria</label>
+              <div class="entrada"><input id="nombreLengua" name="nombreLengua" maxlength="60" placeholder="Tikin xiik'"></div>
+            </div>
+            <div class="campo">
+              <label for="lengua">Lengua</label>
+              <div class="entrada"><input id="lengua" name="lengua" list="lenguas" maxlength="30" placeholder="Maya yucateco"><i data-icon="chevron-down"></i></div>
+              <datalist id="lenguas">
+                <option value="Náhuatl"><option value="Maya yucateco"><option value="Zapoteco"><option value="Mixteco"><option value="Tseltal">
+                <option value="Tsotsil"><option value="Otomí"><option value="Totonaco"><option value="Mazateco"><option value="Chol">
+                <option value="Purépecha"><option value="Mixe"><option value="Huasteco (Tének)"><option value="Mazahua"><option value="Chinanteco">
+              </datalist>
+            </div>
+          </div>
+          <div class="campo">
+            <label for="historia">La historia detrás del platillo</label>
+            <div class="entrada"><textarea id="historia" name="historia" rows="3" maxlength="2000" data-dictado placeholder="Un recuerdo, una fiesta o una persona que acompañe esta receta (opcional)."></textarea></div>
           </div>
           <div class="campo">
             <span class="campo__etiqueta">Fotografía del platillo *</span>
@@ -68,6 +90,11 @@
               </label>
             </div>
             <p class="ayuda">Sube una foto propia del platillo; será la portada de tu receta.</p>
+            <details class="foto-enlace">
+              <summary>¿No tienes foto? Usa una con licencia libre</summary>
+              <div class="entrada"><input type="url" name="fotoEnlace" maxlength="255" placeholder="https://upload.wikimedia.org/…" data-foto-enlace></div>
+              <p class="ayuda">Pega el enlace de una foto de Wikimedia Commons u otra fuente con licencia libre.</p>
+            </details>
           </div>
         </section>
 
@@ -155,8 +182,20 @@
             <label for="tipoPlatillo">Tipo de platillo *</label>
             <div class="entrada"><select id="tipoPlatillo" name="tipoPlatillo" required><option value="">Elige un tipo</option></select><i data-icon="chevron-down"></i></div>
           </div>
+          <div class="campo">
+            <label for="consejo">Un consejo para quien la prepare</label>
+            <div class="entrada"><textarea id="consejo" name="consejo" rows="2" maxlength="600" data-dictado placeholder="El secreto que hace la diferencia (opcional)."></textarea></div>
+          </div>
           <hr class="separador">
+          <fieldset class="licencias">
+            <legend class="campo__etiqueta">¿Cómo se puede usar tu receta? *</legend>
+            <label class="licencia-opcion"><input type="radio" name="licencia" value="saber-comunitario" checked>
+              <span><strong>Saber comunitario</strong><small>Se comparte para conocerlo y preservarlo, citando a tu comunidad. No para uso comercial.</small></span></label>
+            <label class="licencia-opcion"><input type="radio" name="licencia" value="cc-by-nc-sa">
+              <span><strong>Creative Commons BY-NC-SA</strong><small>Otras personas pueden compartirla y adaptarla citándote, sin fines comerciales.</small></span></label>
+          </fieldset>
           <div class="casillas">
+            <label class="casilla"><input type="checkbox" name="consentimiento"> Mi familia o comunidad está de acuerdo en compartir este saber. *</label>
             <label class="casilla"><input type="checkbox" name="propia"> La receta y las fotografías son propias o tengo permiso para compartirlas. *</label>
             <label class="casilla"><input type="checkbox" name="terminos"> Acepto compartir este aporte bajo los Términos de uso de SIGEPA MX. *</label>
           </div>
@@ -172,13 +211,14 @@
           <p class="eyebrow">TU VOZ IMPORTA</p>
           <h2>Cocinar, contar, conservar.</h2>
           <p>No hace falta ser chef. Comparte la receta como la preparas en casa, con sus nombres locales y los detalles que la hacen tuya.</p>
+          <p class="guia__voz" data-ayuda-dictado hidden><i data-icon="mic" data-size="17"></i> ¿Prefieres contarla en voz alta? Toca el micrófono en los campos de texto y habla; se escribe sola.</p>
           <p class="guia__cuenta" data-publicando></p>
         </div>
         <div class="panel guia">
           <h2 style="font-size:23px">Antes de publicar</h2>
           <ul class="revision" data-revision>
             <li data-r="historia"><i data-icon="circle-check" data-size="17"></i>Nombre e historia de la receta</li>
-            <li data-r="foto"><i data-icon="circle-check" data-size="17"></i>Al menos una foto propia</li>
+            <li data-r="foto"><i data-icon="circle-check" data-size="17"></i>Una foto del platillo</li>
             <li data-r="lugar"><i data-icon="circle-check" data-size="17"></i>Estado y localidad de origen</li>
             <li data-r="pasos"><i data-icon="circle-check" data-size="17"></i>Cantidades e instrucciones claras</li>
             <li data-r="detalles"><i data-icon="circle-check" data-size="17"></i>Porciones y tiempo total</li>
@@ -195,6 +235,6 @@
 
   <script src="vendor/leaflet/leaflet.js"></script>
   <script src="vendor/topojson-client.min.js"></script>
-  <script type="module" src="js/publicar.js"></script>
+  <script type="module" src="js/paginas/publicar.js"></script>
 </body>
 </html>

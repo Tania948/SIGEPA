@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sobre el proyecto · SIGEPA MX</title>
   <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#263b32">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -23,7 +26,7 @@
         </div>
       </div>
       <figure>
-        <img src="assets/img/preparar-en-comunidad.jpg" alt="Dos cocineras de distintas generaciones preparando tortillas en una cocina tradicional">
+        <img data-foto="chocolate" data-credito alt="">
         <figcaption>Los saberes se transmiten al cocinar y compartir.</figcaption>
       </figure>
     </section>
@@ -64,6 +67,45 @@
       </ol>
     </section>
 
+    <section class="innovacion">
+      <div class="seccion-encabezado"><h2 class="titulo-md" style="font-size:34px">Más que un recetario</h2></div>
+      <div class="principios principios--cuatro">
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="chef-hat" data-size="24"></i></span>
+          <h3>Modo cocina con voz</h3>
+          <p>Cada receta se sigue paso a paso en pantalla completa, con lectura en voz alta, temporizadores y control por voz para cocinar con las manos ocupadas.</p>
+        </article>
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="mic" data-size="24"></i></span>
+          <h3>Contar en lugar de escribir</h3>
+          <p>Quien comparte una receta puede dictarla. La tradición oral de las cocinas se respeta: no hace falta escribir para participar.</p>
+        </article>
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="calendar-days" data-size="24"></i></span>
+          <h3>Calendario de temporada</h3>
+          <p>Qué se recolecta, se cosecha o se pesca cada mes y en qué estados, con recomendaciones para recolectar sin dañar el entorno.</p>
+          <a class="enlace" href="temporadas.html">Ver el calendario →</a>
+        </article>
+        <article class="panel principio">
+          <span class="icono-circulo"><i data-icon="wifi-off" data-size="24"></i></span>
+          <h3>Funciona sin señal</h3>
+          <p>SIGEPA se instala como app y guarda las recetas que ya abriste para consultarlas sin internet, en la cocina o en el campo.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel datos-abiertos" id="datos-abiertos">
+      <div>
+        <p class="eyebrow">DATOS ABIERTOS</p>
+        <h2 class="titulo-md">Un mapa que otras personas pueden estudiar.</h2>
+        <p class="texto">Las recetas validadas se pueden descargar con su ubicación, municipio (clave INEGI), ingredientes, autoría y licencia, para investigación, docencia o mapas propios. No incluyen correos ni datos personales.</p>
+      </div>
+      <div class="datos-abiertos__botones">
+        <a class="btn btn--primario" href="/api/datos-abiertos/recetas.geojson" download="sigepa-recetas.geojson"><i data-icon="download"></i>GeoJSON (mapas)</a>
+        <a class="btn btn--secundario" href="/api/datos-abiertos/recetas.csv"><i data-icon="download"></i>CSV (hojas de cálculo)</a>
+      </div>
+    </section>
+
     <section class="compromiso">
       <div>
         <h2>No hay una sola manera de cocinar México.</h2>
@@ -78,24 +120,15 @@
     <section class="legal">
       <section class="panel" id="terminos">
         <h2>Términos de uso</h2>
-        <p>Al publicar una receta confirmas que el texto y las fotografías son tuyos o que tienes permiso para compartirlos. Cada aporte conserva la autoría de quien lo comparte. El equipo de SIGEPA revisa las recetas antes de mostrarlas en el mapa y puede ocultar comentarios o contenidos que no respeten a la comunidad.</p>
+        <p>Al publicar una receta confirmas que el texto y las fotografías son tuyos o que tienes permiso para compartirlos, y que tu familia o comunidad está de acuerdo en compartir ese saber. Cada aporte conserva la autoría de quien lo comparte y la licencia que elija (saber comunitario o Creative Commons BY-NC-SA). El moderador de SIGEPA revisa las recetas antes de mostrarlas en el mapa y puede ocultar comentarios o contenidos que no respeten a la comunidad.</p>
       </section>
       <section class="panel" id="privacidad">
         <h2>Aviso de privacidad</h2>
-        <p>Guardamos tu nombre, tu correo y tu contraseña cifrada para administrar tu cuenta. Tu correo no se muestra a otras personas. La ubicación de una receta corresponde a la localidad de origen, nunca a un domicilio. Tus favoritos y borradores se guardan solo en tu navegador.</p>
+        <p>Guardamos tu nombre, tu correo y tu contraseña cifrada para administrar tu cuenta. Tu correo no se muestra a otras personas ni aparece en los datos abiertos. La ubicación de una receta corresponde a la localidad de origen, nunca a un domicilio. Tus favoritos, borradores y las recetas guardadas sin conexión se quedan solo en tu dispositivo. El dictado por voz y el modo cocina usan las funciones de tu navegador; SIGEPA no graba tu voz.</p>
       </section>
     </section>
   </main>
 
-  <script type="module">
-    import { sesion } from "./js/api.js";
-    import { montarLayout, ruta } from "./js/layout.js";
-    montarLayout("sobre");
-    document.querySelector("[data-ruta]").outerHTML = ruta([["Inicio", "index.html"], ["Sobre el proyecto"]]);
-    if (sesion.activa) {
-      document.querySelector("[data-invitacion] a").href = "publicar.html";
-      document.querySelector("[data-invitacion] a").textContent = "Publicar una receta";
-    }
-  </script>
+  <script type="module" src="js/paginas/sobre.js"></script>
 </body>
 </html>

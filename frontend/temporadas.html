@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calendario de temporada · SIGEPA MX</title>
+  <meta name="description" content="Qué ingredientes se recolectan, cosechan o pescan cada mes en México, dónde y con qué recetas.">
+  <link rel="icon" href="assets/img/logo-sigepa.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+  <meta name="theme-color" content="#263b32">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="contenedor pagina" style="gap:28px">
+    <div data-ruta></div>
+    <header class="temporada-encabezado">
+      <div>
+        <p class="eyebrow">CALENDARIO DE TEMPORADA</p>
+        <h1 class="titulo-lg">Lo que da la tierra en <span data-mes-titulo>este mes</span>.</h1>
+        <p class="texto">Quelites, hongos, chapulines, flores y frutos tienen su tiempo. Elige un mes y un estado para ver qué se recolecta, se cosecha o se pesca, dónde y en qué recetas se usa.</p>
+      </div>
+      <div class="temporada-filtros">
+        <div class="campo">
+          <label for="estado">Estado</label>
+          <div class="entrada"><select id="estado" data-estado><option value="">Todo México</option></select><i data-icon="chevron-down"></i></div>
+        </div>
+      </div>
+    </header>
+    <nav class="meses" aria-label="Meses" data-meses></nav>
+
+    <div class="temporada">
+      <section class="temporada__lista" aria-live="polite" data-lista></section>
+      <aside class="temporada__mapa">
+        <div class="panel">
+          <h2 class="titulo-sm" data-mapa-titulo>Dónde se da</h2>
+          <div class="mapa-temporada" data-mapa role="application" aria-label="Mapa de estados donde se da el ingrediente"></div>
+          <p class="texto-xs">Toca un ingrediente para ver en el mapa sus estados y las recetas que lo usan.</p>
+        </div>
+        <div class="panel panel--crema">
+          <h3 class="titulo-sm"><i data-icon="heart-handshake" data-size="20"></i> Recolecta con respeto</h3>
+          <ul class="texto-sm lista-puntos">
+            <li>Pide permiso a quien cuida el terreno: ejido, comunidad o dueño.</li>
+            <li>Corta hojas y puntas; no arranques la planta de raíz.</li>
+            <li>Deja suficiente para que vuelva a crecer y para la fauna.</li>
+            <li>Con hongos silvestres, ve siempre con alguien de la comunidad que los conozca.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
+  <script type="module" src="js/paginas/temporadas.js"></script>
+</body>
+</html>
