@@ -52,24 +52,25 @@ sus tablas y los datos de ejemplo si no existen. Para volver a los datos de ejem
 | maria.pech@correo.mx | Portadora de saberes (Yucatán) |
 | diego.ramirez@correo.mx | Usuario |
 
-La base trae **68 recetas** de los 32 estados (67 validadas y 1 en revisión), de 18 portadores de saberes.
+La base trae **68 recetas** de los 32 estados (67 validadas y 1 en revisión), de 18 portadores de saberes, con
+327 ingredientes y 208 pasos.
 
 ## Estructura
 
 ```
 backend/            API REST en NestJS + TypeORM; también sirve el front
   src/config/         variables de entorno
-  src/database/       entidades (diccionario de datos), conexión y creación automática
+  src/database/       entidades TypeORM (una por tabla), conexión y creación automática
   src/common/         sesión JWT y guardias por rol
   src/dominio/        lógica pura: precios, costos, temporadas (con pruebas)
-  src/modulos/        auth, usuarios, recetas, comentarios, estados, archivos,
+  src/modulos/        auth, usuarios, favoritos, recetas, comentarios, estados, archivos,
                       asistente, temporadas, datos-abiertos, salud
 frontend/           HTML5, CSS3 y JavaScript (módulos ES, sin frameworks)
   js/nucleo/          API, idiomas, fotos, PWA
   js/componentes/     encabezado, tarjetas, mapa, asistente, modo cocina, dictado
   js/paginas/         un archivo por pantalla
-database/           esquema.sql (tablas) y datos.sql (datos de ejemplo)
-docs/               arquitectura, despliegue y mantenimiento
+database/           esquema.sql (12 tablas, vistas) y datos.sql (catálogos y datos de ejemplo)
+docs/               base de datos, arquitectura, despliegue y mantenimiento
 render.yaml         despliegue en Render
 ```
 
@@ -84,7 +85,7 @@ traducciones, fotos): [docs/MANTENIMIENTO.md](docs/MANTENIMIENTO.md).
 | 2 | Usuario | Explora el mapa, busca, guarda favoritas y comenta |
 | 3 | Portador(a) de saberes | Todo lo anterior y además **publica recetas** de su comunidad |
 
-Un usuario puede pasar a portador desde "Publicar receta".
+Los roles están en el catálogo `tipo_usuario`. Un usuario puede pasar a portador desde "Publicar receta".
 
 ## API
 
@@ -107,6 +108,7 @@ Un usuario puede pasar a portador desde "Publicar receta".
 | GET | `/api/temporadas?mes=&estado=` | Ingredientes en temporada |
 | GET | `/api/datos-abiertos/recetas.geojson`, `.../recetas.csv` | Datos abiertos |
 | GET / PATCH | `/api/usuarios/:id`, `/api/usuarios/yo` | Perfil público y editar el propio |
+| GET / PUT / DELETE | `/api/usuarios/yo/favoritos[/:idReceta]` | Mis favoritos (tabla `favorito`) |
 | GET | `/api/usuarios/yo/recetas` | Mis aportes |
 | POST | `/api/usuarios/yo/portador` | Pasar a portador de saberes |
 | POST | `/api/uploads` | Subir fotografía (campo `foto`) |
@@ -114,10 +116,16 @@ Un usuario puede pasar a portador desde "Publicar receta".
 
 ## Base de datos
 
-Sigue el **Diccionario de datos (10.2)**: tablas `usuario`, `receta`, `estado` y `comentario` con los mismos campos,
-tipos y longitudes, más `receta.urlImagen` del **Modelo E-R (10.1)**. Los datos del diseño sin columna propia
-(ingredientes con cantidad, pasos, municipio, coordenadas, lengua, licencia…) van como JSON en `receta.ingredientes`
-y `receta.preparacion`. Favoritos y borradores se guardan en el navegador de cada usuario.
+Modelo relacional en **tercera forma normal** con 12 tablas: catálogos (`tipo_usuario`, `estado`, `municipio` con los
+2,475 municipios del INEGI, `region`, `lengua`, `ingrediente`), entidades (`usuario`, `receta`), dependientes
+(`paso`, `comentario`) y asociativas (`receta_ingrediente`, `favorito`), más dos vistas. Llaves primarias y foráneas
+con acciones referenciales, restricciones CHECK y UNIQUE, índices y transacciones.
+
+Diccionario de datos, diagrama E-R, justificación de las formas normales y reglas de integridad:
+**[docs/BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md)** (imagen del E-R en `docs/img/modelo-er.png`).
+
+Si tienes una base creada con una versión anterior del proyecto, la API te avisará al arrancar: ejecuta
+`npm run db:reiniciar` en `backend` para crear las tablas nuevas.
 
 ## Créditos
 

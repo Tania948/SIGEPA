@@ -12,13 +12,26 @@ GitHub Actions corre lo mismo (y arranca la API contra MySQL 8) en cada push.
 
 ## Agregar un campo a las recetas
 
-1. `database/esquema.sql` — agrega la columna a `receta`.
+1. `database/esquema.sql` — agrega la columna a `receta` (con su CHECK si tiene valores fijos) y descríbela en
+   `docs/BASE_DE_DATOS.md` (diccionario de datos y diagrama E-R).
 2. `backend/src/database/entidades/receta.entity.ts` — agrega la propiedad con `@Column`.
 3. `backend/src/modulos/recetas/receta.dto.ts` — agrega la validación si el portador lo captura.
-4. `backend/src/modulos/recetas/receta.formato.ts` — inclúyelo en `serializarReceta` para que la API lo devuelva.
+4. `backend/src/modulos/recetas/recetas.service.ts` (`guardar`) y `receta.formato.ts` (`serializarReceta`) — guárdalo y
+   devuélvelo en la API.
 5. Front: el formulario en `frontend/publicar.html` + `js/paginas/publicar.js`, y la vista en `js/paginas/receta.js`.
-6. En una base ya creada, aplica el `ALTER TABLE` a mano (la API solo crea tablas cuando la base está vacía),
-   o reinicia los datos de ejemplo con `npm run db:reiniciar`.
+6. En una base ya creada aplica el `ALTER TABLE` a mano (la API solo crea tablas cuando la base está vacía), o
+   reinicia los datos de ejemplo con `npm run db:reiniciar`.
+
+Si el dato puede repetirse en muchas recetas (como la región o la lengua), hazlo catálogo: tabla propia, llave
+foránea en `receta` y búsqueda o alta en `guardar()` con `this.catalogo(...)`.
+
+## Catálogos
+
+- **Municipios**: vienen del Marco Geoestadístico del INEGI (los mismos que dibuja el mapa en
+  `frontend/assets/mapa/municipios`). No se capturan a mano.
+- **Regiones, lenguas e ingredientes**: crecen con la comunidad; si al publicar se escribe uno nuevo, la API lo agrega.
+  Para corregir un nombre basta con editar su fila: todas las recetas que lo usan se actualizan.
+- **Roles**: tabla `tipo_usuario`, con su espejo `TipoUsuario` en `backend/src/database/entidades/tipos.ts`.
 
 ## Actualizar precios u origen de ingredientes
 

@@ -3,7 +3,7 @@
 //
 // Mantenimiento: cambia VERSION en cada despliegue que modifique archivos del front;
 // así los navegadores descartan la copia anterior.
-const VERSION = "sigepa-2026-11-26";
+const VERSION = "sigepa-2026-11-27";
 const BASE = [
   "/", "/index.html", "/recetas.html", "/receta.html", "/temporadas.html", "/sin-conexion.html",
   "/css/styles.css", "/css/fuentes.css", "/assets/img/logo-sigepa.png", "/assets/img/icono-192.png",

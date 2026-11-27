@@ -12,6 +12,7 @@ import { AuthModule } from './modulos/auth/auth.module';
 import { ComentariosModule } from './modulos/comentarios/comentarios.module';
 import { DatosAbiertosModule } from './modulos/datos-abiertos/datos-abiertos.module';
 import { EstadosModule } from './modulos/estados/estados.module';
+import { FavoritosModule } from './modulos/favoritos/favoritos.module';
 import { RecetasModule } from './modulos/recetas/recetas.module';
 import { SaludModule } from './modulos/salud/salud.module';
 import { TemporadasModule } from './modulos/temporadas/temporadas.module';
@@ -34,7 +35,7 @@ const cfg = configuracion();
       { rootPath: cfg.carpetaFrontend, exclude: ['/api/(.*)'], serveStaticOptions: { maxAge: cfg.entorno === 'production' ? 3600_000 : 0 } },
     ),
     AuthModule, UsuariosModule, RecetasModule, ComentariosModule, EstadosModule, ArchivosModule,
-    AsistenteModule, TemporadasModule, DatosAbiertosModule, SaludModule,
+    FavoritosModule, AsistenteModule, TemporadasModule, DatosAbiertosModule, SaludModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

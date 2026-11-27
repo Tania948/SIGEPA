@@ -23,24 +23,13 @@ const ZONAS = {
   "Yucatán": "SURESTE · PENÍNSULA", "Zacatecas": "CENTRO · NORTE",
 };
 
-const REGIONES = {
-  "Oaxaca": ["Valles Centrales", "Sierra Norte", "Sierra Sur", "Mixteca", "Cañada", "Costa", "Istmo", "Papaloapan"],
-  "Yucatán": ["Mérida", "Oriente", "Litoral", "Cono Sur"],
-  "Puebla": ["Angelópolis", "Sierra Norte", "Mixteca", "Valle de Atlixco", "Tehuacán"],
-  "Veracruz": ["Huasteca", "Totonacapan", "Sotavento", "Altas Montañas", "Los Tuxtlas"],
-  "Chiapas": ["Altos", "Soconusco", "Selva", "Frailesca", "Centro"],
-  "Jalisco": ["Centro", "Altos", "Costa", "Sur", "Norte"],
-  "Michoacán": ["Meseta Purépecha", "Tierra Caliente", "Lacustre", "Costa"],
-  "Guerrero": ["Montaña", "Costa Chica", "Costa Grande", "Tierra Caliente", "Centro"],
-};
-
 const INFO = {
   "Oaxaca": {
     intro: "Del comal de los Valles Centrales a las cocinas del Istmo: descubre distintas maneras de preparar, compartir y recordar.",
     texto: "Maíces, chiles y hierbas de temporada dan forma a una cocina que cambia entre sierras, valles y costas. Aquí, cada familia guarda una manera propia de llevar los ingredientes a la mesa.",
     temas: [["Maíz", "maíz"], ["Moles", "mole"], ["Cocina de comunidad", ""]],
     etiquetas: ["MILPA", "COMAL", "MERCADO", "COMUNIDAD"],
-    imagen: "assets/img/mercado-oaxaca.jpg",
+    imagen: "mercado",   // clave de FOTOS en nucleo/fotos.js (Wikimedia Commons)
   },
   "Yucatán": {
     intro: "Del recado rojo a la lima agria: una cocina de pib, cítricos y hojas de plátano.",
@@ -57,11 +46,10 @@ export function infoEstado(nombre = "") {
     temas: i.temas ?? [],
     etiquetas: i.etiquetas ?? [],
     imagen: i.imagen ?? null,
-    regiones: REGIONES[nombre] ?? [],
   };
 }
 
-/** Une las regiones sugeridas del catálogo con las que ya existen en recetas. */
-export function regionesDe(nombreEstado, desdeApi = []) {
-  return [...new Set([...infoEstado(nombreEstado).regiones, ...desdeApi.map((r) => r.region ?? r)])];
+/** Regiones del estado: vienen del catálogo region de la base (/api/recetas/regiones?estado=). */
+export function regionesDe(_nombreEstado, desdeApi = []) {
+  return [...new Set(desdeApi.map((r) => r.region ?? r))];
 }

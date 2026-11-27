@@ -24,7 +24,7 @@ flowchart LR
   end
 
   N -- "HTTP /api (JSON)" --> M
-  DB -- "TypeORM / mysql2 (TLS)" --> BD[(MySQL 8 / TiDB Cloud)]
+  DB -- "TypeORM / mysql2 (TLS)" --> BD[(MySQL 8 / TiDB Cloud<br/>12 tablas en 3FN)]
   C -. mosaicos .-> OSM[OpenStreetMap / Esri]
   C -. fotos .-> WM[Wikimedia Commons]
 ```
@@ -34,7 +34,7 @@ flowchart LR
 | Carpeta | Responsabilidad | Regla |
 |---|---|---|
 | `config/` | Lee variables de entorno (`.env` o Render) | Es el único lugar que toca `process.env` |
-| `database/` | Entidades (diccionario de datos), conexión, creación automática de tablas | Las entidades reflejan `database/esquema.sql` |
+| `database/` | Entidades (una por tabla), conexión, creación automática de tablas | Las entidades reflejan `database/esquema.sql` ([BASE_DE_DATOS.md](BASE_DE_DATOS.md)) |
 | `common/` | Seguridad (sesión JWT, guardias por rol) y utilidades | Sin lógica de negocio |
 | `dominio/` | Lógica pura: precios, costo de recetas, temporadas | No conoce Nest ni la base; se prueba con `npm test` |
 | `modulos/` | Un módulo por caso de uso: `controller` (HTTP), `service` (reglas), `dto` (validación) | Los controladores no hacen consultas |
@@ -45,6 +45,7 @@ flowchart LR
 |---|---|---|
 | auth | `/api/auth` | Registro, inicio de sesión, sesión actual |
 | usuarios | `/api/usuarios` | Perfil, recetas propias, pasar a portador |
+| favoritos | `/api/usuarios/yo/favoritos` | Recetas guardadas (tabla asociativa `favorito`) |
 | recetas | `/api/recetas` | Búsqueda, mapa, detalle, costo, publicar, validar |
 | comentarios | `/api/recetas/:id/comentarios`, `/api/comentarios` | Comentar y moderar |
 | estados | `/api/estados` | Catálogo de los 32 estados |
@@ -54,11 +55,11 @@ flowchart LR
 | datos-abiertos | `/api/datos-abiertos` | Recetas validadas en GeoJSON y CSV |
 | salud | `/api/salud` | Revisión de que la API y la base responden |
 
-### Roles (`usuario.tipoUsu`)
+### Roles (`usuario.tipoUsu` → catálogo `tipo_usuario`)
 
 | Valor | Rol | Guardia |
 |---|---|---|
-| 1 | Moderador (administrador) | `ModeradorGuard` |
+| 1 | Moderador | `ModeradorGuard` |
 | 2 | Usuario | `SesionGuard` |
 | 3 | Portador(a) de saberes | `PortadorGuard` |
 
@@ -83,3 +84,12 @@ La política de seguridad (CSP) solo permite scripts propios, por eso ninguna p�
 
 Render (servicio web gratuito) + TiDB Cloud Starter (MySQL compatible, gratis). Ver [DESPLIEGUE.md](DESPLIEGUE.md).
 Cada push pasa por GitHub Actions (`.github/workflows/ci.yml`): pruebas, compilación y un arranque real contra MySQL 8.
+
+## Acceso a datos
+
+- Una receta se lee con sus relaciones muchos a uno en una consulta (municipio, estado, región, lengua, autor) y sus
+  ingredientes y pasos en dos consultas más para toda la página de resultados, sin importar cuántas recetas sean.
+- Publicar o editar una receta es una **transacción**: receta, ingredientes y pasos se guardan juntos o no se guarda
+  nada.
+- La búsqueda por ingrediente usa `EXISTS` sobre `receta_ingrediente` con el índice `ix_ri_ingrediente`.
+- El conteo de recetas por estado del mapa sale de la vista `v_recetas_por_estado`.

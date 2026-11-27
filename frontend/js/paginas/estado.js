@@ -2,6 +2,7 @@
 import { api, esc, parametro } from "../nucleo/api.js";
 import { crearAtlas } from "../componentes/mapa-mexico.js";
 import { icon } from "../nucleo/icons.js";
+import { pintarFotosFijas } from "../nucleo/fotos.js";
 import { DIFICULTADES, RANGOS_TIEMPO, TIPOS_PLATILLO, infoEstado, regionesDe } from "../nucleo/catalogos.js";
 import { activarFavoritos, cargando, estadoVacio, paginacion, pildoraMenu, tarjetaReceta } from "../componentes/componentes.js";
 import { montarLayout, ruta } from "../componentes/layout.js";
@@ -28,7 +29,10 @@ $("[data-zona]").textContent = `MÉXICO / ${info.zona}`;
 $("[data-nombre]").textContent = estado.nomEstado;
 $("[data-texto]").textContent = info.texto;
 $("[data-etiquetas]").innerHTML = info.etiquetas.map(esc).join(" <span>·</span> ");
-if (info.imagen) $("[data-hero]").insertAdjacentHTML("beforeend", `<img src="${info.imagen}" alt="">`);
+if (info.imagen) {
+  $("[data-hero]").insertAdjacentHTML("beforeend", `<img data-foto="${esc(info.imagen)}" data-credito alt="">`);
+  pintarFotosFijas($("[data-hero]"));
+}
 else $("[data-hero]").classList.add("estado-hero--sin-foto");
 
 // Buscador y cambio de estado

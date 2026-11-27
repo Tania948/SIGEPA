@@ -1,19 +1,14 @@
-// Formato de las columnas TEXT de la tabla Receta (diccionario de datos 10.2):
+// Conversión entre las filas normalizadas de la base y el formato JSON que usa el front.
 //
-//  ingredientes -> [{ "cantidad": "700", "unidad": "g", "nombre": "pollo en piezas" }, ...]
-//  preparacion  -> {
-//     "pasos": [{ "titulo": "Prepara los ingredientes", "texto": "Lava los vegetales..." }],
-//     "porciones": 4, "tiempoTotal": 60, "dificultad": "Intermedia", "tipoPlatillo": "Plato fuerte",
-//     "region": "Valles Centrales", "municipio": "San Pablo Villa de Mitla", "cveMun": "20068",
-//     "localidad": "Mitla", "latitud": 16.92, "longitud": -96.36,
-//     "consejo": "...", "historia": "...", "pieFoto": "...",
-//     "nombreLengua": "Tikin xiik'", "lengua": "Maya yucateco",
-//     "licencia": "saber-comunitario" | "cc-by-nc-sa", "consentimiento": true
-//  }
-//
-// Así el esquema queda igual al diccionario y la receta guarda todo lo que pide el diseño.
-// Para agregar un dato nuevo a la receta: súmalo aquí (serializarReceta), en receta.dto.ts y en el front.
-import { leerJson } from '../../common/utils/json';
+// En la base una receta se reparte en varias tablas (ver docs/BASE_DE_DATOS.md):
+//   receta ─┬─ municipio ── estado        (dónde)
+//           ├─ region, lengua             (catálogos)
+//           ├─ receta_ingrediente ── ingrediente
+//           ├─ paso
+//           └─ usuario                    (portador o portadora)
+// serializarReceta() las junta en un solo objeto para la API.
+// Para agregar un dato nuevo a la receta: columna en database/esquema.sql y en receta.entity.ts,
+// validación en receta.dto.ts, aquí en serializarReceta y en el front.
 import { Receta } from '../../database/entidades';
 
 export const DIFICULTADES = ['Fácil', 'Intermedia', 'Avanzada'];
@@ -30,45 +25,73 @@ export type Licencia = keyof typeof LICENCIAS;
 export interface IngredienteJson { cantidad?: string; unidad?: string; nombre: string }
 export interface PasoJson { titulo?: string; texto: string }
 
+const FRACCIONES: Record<string, string> = { '0.25': '¼', '0.5': '½', '0.75': '¾', '0.33': '⅓', '0.67': '⅔' };
+const FRACCION_A_NUMERO: Record<string, number> = { '¼': 0.25, '½': 0.5, '¾': 0.75, '⅓': 0.33, '⅔': 0.67 };
+
+/** DECIMAL de la base -> texto legible: "4.00" -> "4", "0.50" -> "½", "1.50" -> "1½". */
+export function cantidadATexto(valor: string | number | null | undefined): string {
+  if (valor === null || valor === undefined || valor === '') return 'Al gusto';
+  const n = Number(valor);
+  const entero = Math.floor(n);
+  const resto = (Math.round((n - entero) * 100) / 100).toString();
+  if (FRACCIONES[resto]) return `${entero || ''}${FRACCIONES[resto]}`;
+  return String(Math.round(n * 100) / 100);
+}
+
+/**
+ * Texto que escribe la persona -> número para la columna DECIMAL.
+ * Acepta "200", "1.5", "1,5", "1/2", "1 1/2", "½", "1½". Vacío o "al gusto" -> null. Inválido -> undefined.
+ */
+export function textoACantidad(texto?: string | null): number | null | undefined {
+  const t = (texto ?? '').trim().toLowerCase();
+  if (!t || t === '—' || t.includes('gusto')) return null;
+  const m = t.match(/^(\d+)?\s*([¼½¾⅓⅔])$/);
+  if (m) return Number(m[1] ?? 0) + FRACCION_A_NUMERO[m[2]];
+  const f = t.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);
+  if (f) return Number(f[3]) ? Number(f[1] ?? 0) + Number(f[2]) / Number(f[3]) : undefined;
+  const n = Number(t.replace(',', '.'));
+  return Number.isFinite(n) && n > 0 && n < 1_000_000 ? Math.round(n * 100) / 100 : undefined;
+}
+
+const numero = (v: string | number | null | undefined) => (v === null || v === undefined ? null : Number(v));
+
 export function serializarReceta(r: Receta) {
-  const ingredientes = leerJson<IngredienteJson[]>(r.ingredientes, []);
-  const prep = leerJson<Record<string, any>>(r.preparacion, {});
-  // Si la preparación se capturó como texto plano (fuera de la API), se muestra como un solo paso.
-  const pasos: PasoJson[] = Array.isArray(prep.pasos) ? prep.pasos
-    : r.preparacion && !r.preparacion.trim().startsWith('{') ? [{ texto: r.preparacion }] : [];
-  const licencia: Licencia = prep.licencia in LICENCIAS ? prep.licencia : 'saber-comunitario';
+  const licencia: Licencia = r.licencia in LICENCIAS ? (r.licencia as Licencia) : 'saber-comunitario';
+  const estado = r.municipio?.estado;
+  const ingredientes: IngredienteJson[] = [...(r.ingredientes ?? [])].sort((a, b) => a.orden - b.orden).map((ri) => ({
+    cantidad: cantidadATexto(ri.cantidad),
+    unidad: ri.unidad ?? '',
+    nombre: ri.nota ? `${ri.ingrediente.nomIngrediente}, ${ri.nota}` : ri.ingrediente.nomIngrediente,
+  }));
+  const pasos: PasoJson[] = [...(r.pasos ?? [])].sort((a, b) => a.numPaso - b.numPaso)
+    .map((p) => ({ ...(p.titulo ? { titulo: p.titulo } : {}), texto: p.texto }));
   return {
     idReceta: r.idReceta,
     nombreReceta: r.nombreReceta,
     descripcion: r.descripcion,
-    ingredientes: Array.isArray(ingredientes) ? ingredientes : [],
+    ingredientes,
     pasos,
-    porciones: prep.porciones ?? null,
-    tiempoTotal: prep.tiempoTotal ?? null,
-    dificultad: prep.dificultad ?? null,
-    tipoPlatillo: prep.tipoPlatillo ?? null,
-    region: prep.region ?? null,
-    localidad: prep.localidad ?? null,
-    municipio: prep.municipio ?? null,
-    cveMun: prep.cveMun ?? null,
-    latitud: prep.latitud ?? null,
-    longitud: prep.longitud ?? null,
-    consejo: prep.consejo ?? null,
-    historia: prep.historia ?? null,
-    pieFoto: prep.pieFoto ?? null,
-    nombreLengua: prep.nombreLengua ?? null,
-    lengua: prep.lengua ?? null,
+    porciones: r.porciones,
+    tiempoTotal: r.tiempoTotal,
+    dificultad: r.dificultad,
+    tipoPlatillo: r.tipoPlatillo,
+    region: r.region?.nomRegion ?? null,
+    localidad: r.localidad,
+    municipio: r.municipio?.nomMunicipio ?? null,
+    cveMun: r.cveMun,
+    latitud: numero(r.latitud),
+    longitud: numero(r.longitud),
+    consejo: r.consejo,
+    historia: r.historia,
+    nombreLengua: r.nombreLengua,
+    lengua: r.lengua?.nomLengua ?? null,
     licencia,
     licenciaTexto: LICENCIAS[licencia],
     fechaRegistro: r.fechaRegistro,
     estadoValidacion: r.estadoValidacion,
     urlImagen: r.urlImagen,
-    estado: r.estado ? { idEstado: r.estado.idEstado, nomEstado: r.estado.nomEstado } : { idEstado: r.idEstado, nomEstado: undefined as string | undefined },
+    estado: { idEstado: estado?.idEstado ?? Number(r.cveMun.slice(0, 2)), nomEstado: estado?.nomEstado },
     autor: r.usuario ? { idUs: r.usuario.idUs, nombre: `${r.usuario.nombre} ${r.usuario.apPat}` } : { idUs: r.idUsuario, nombre: undefined as string | undefined },
   };
 }
 export type RecetaPublica = ReturnType<typeof serializarReceta>;
-
-/** Expresión SQL que lee un campo del JSON guardado en receta.preparacion (MySQL 8, MariaDB y TiDB). */
-export const campoPrep = (campo: string) =>
-  `(CASE WHEN JSON_VALID(r.preparacion) THEN JSON_UNQUOTE(JSON_EXTRACT(r.preparacion, '$.${campo}')) END)`;

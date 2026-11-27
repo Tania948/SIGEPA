@@ -3,7 +3,7 @@ import { Receta } from './receta.entity';
 import { EstadoComentario } from './tipos';
 import { Usuario } from './usuario.entity';
 
-/** Tabla Comentario (diccionario de datos 10.2). */
+/** Tabla comentario. */
 @Entity('comentario')
 export class Comentario {
   @PrimaryGeneratedColumn({ name: 'idComentario' }) idComentario: number;

@@ -13,7 +13,9 @@ export class RecetasController {
   @Get() buscar(@Query() f: FiltrosReceta) { return this.svc.buscar(f); }
 
   @Get('catalogos')
-  catalogos() { return { dificultades: DIFICULTADES, tiposPlatillo: TIPOS_PLATILLO, licencias: LICENCIAS }; }
+  async catalogos() {
+    return { dificultades: DIFICULTADES, tiposPlatillo: TIPOS_PLATILLO, licencias: LICENCIAS, lenguas: await this.svc.catalogoLenguas() };
+  }
 
   @Get('mapa') puntos(@Query('estado') estado?: string) { return this.svc.puntos(Number(estado) || undefined); }
 

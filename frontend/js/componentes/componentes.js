@@ -112,6 +112,16 @@ export function activarFavoritos(contenedor, { alQuitar } = {}) {
     });
     if (!guardada) alQuitar?.(id);
   });
+  // Si al sincronizar con la base cambian los favoritos, se actualizan los marcadores visibles.
+  document.addEventListener("sigepa:favoritos", () => {
+    contenedor.querySelectorAll("[data-favorito]").forEach((b) => {
+      const guardada = favoritos.tiene(b.dataset.favorito);
+      b.setAttribute("aria-pressed", String(guardada));
+      b.classList.toggle("tarjeta__accion--activa", guardada);
+      b.setAttribute("aria-label", guardada ? "Quitar de favoritos" : "Guardar en favoritos");
+      b.innerHTML = icon(guardada ? "bookmark-check" : "bookmark", 18);
+    });
+  });
 }
 
 /** Menú "…" de las tarjetas propias. */

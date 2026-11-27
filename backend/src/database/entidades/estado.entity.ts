@@ -1,10 +1,10 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Receta } from './receta.entity';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Municipio } from './municipio.entity';
 
-/** Tabla Estado (diccionario de datos 10.2). idEstado coincide con la clave INEGI de la entidad. */
+/** Catálogo estado. idEstado = clave de entidad del INEGI (1 a 32). */
 @Entity('estado')
 export class Estado {
-  @PrimaryGeneratedColumn({ name: 'idEstado' }) idEstado: number;
+  @PrimaryColumn({ type: 'tinyint' }) idEstado: number;
   @Column({ length: 20, unique: true }) nomEstado: string;
-  @OneToMany(() => Receta, (r) => r.estado) recetas: Receta[];
+  @OneToMany(() => Municipio, (m) => m.estado) municipios: Municipio[];
 }

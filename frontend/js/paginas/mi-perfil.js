@@ -138,7 +138,7 @@ let estadosPorId = {};
   cajaMis.innerHTML = cargando();
   cajaFav.innerHTML = cargando();
   try {
-    const ids = favoritos.ids();
+    const ids = (await favoritos.sincronizar()).map((f) => f.id);
     const [perfil, mias, estados, fav] = await Promise.all([
       api("/auth/yo"), api("/usuarios/yo/recetas"), api("/estados"),
       api(`/recetas?ids=${ids.join(",")}&limit=60`),

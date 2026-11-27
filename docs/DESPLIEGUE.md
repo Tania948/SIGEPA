@@ -17,7 +17,8 @@ Las dos cuentas son gratuitas. Tiempo aproximado: 20 minutos.
    - **USERNAME** — algo como `2abc3XYZ.root` (incluye el prefijo y `.root`)
    - **PASSWORD** — la que generaste
 
-No necesitas crear tablas: la API crea la base `sigepa`, sus tablas y los datos de ejemplo la primera vez que arranca.
+No necesitas crear tablas: la API crea la base `sigepa`, sus 12 tablas, las vistas y los datos de ejemplo la primera
+vez que arranca.
 
 ## 2. Servicio web en Render
 
@@ -30,7 +31,7 @@ No necesitas crear tablas: la API crea la base `sigepa`, sus tablas y los datos 
 5. En los registros (*Logs*) debe aparecer:
    ```
    [base] Base vacía: creando tablas (esquema.sql)…
-   [base] Lista: 32 estados, 21 cuentas y 68 recetas.
+   [base] Lista: 12 tablas, 2,475 municipios, 21 cuentas y 68 recetas.
    Listo en http://localhost:10000 (production)
    ```
 6. Abre el enlace del servicio. Revisa también `https://TU-SERVICIO.onrender.com/api/salud` → `{"estado":"ok","base":"ok",...}`.

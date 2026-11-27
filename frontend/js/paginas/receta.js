@@ -129,7 +129,6 @@ async function iniciar() {
       <figure class="receta-portada__foto" style="margin:0">
         ${r.urlImagen ? `<img src="${esc(tamanoFoto(r.urlImagen, 960))}" alt="${esc(r.nombreReceta)}">` : `<div class="sin-foto">${fotoVacia(r, 64)}</div>`}
         ${credito ? `<a class="credito-foto" href="${credito.enlace}" target="_blank" rel="noopener">${credito.texto} · ver autor y licencia</a>` : ""}
-        ${r.pieFoto ? `<figcaption>${esc(r.pieFoto)}</figcaption>` : ""}
       </figure>
       <div class="receta-ficha">
         <p class="eyebrow">${esc(estado.toUpperCase())}${r.region ? ` / ${esc(r.region.toUpperCase())}` : ""}</p>
@@ -210,6 +209,7 @@ async function iniciar() {
     guardar.setAttribute("aria-pressed", String(activa));
   };
   pintarGuardar();
+  document.addEventListener("sigepa:favoritos", pintarGuardar);
   guardar.addEventListener("click", () => {
     if (!sesion.activa) { location.href = `login.html?volver=${encodeURIComponent(location.pathname + location.search)}`; return; }
     favoritos.alternar(id);

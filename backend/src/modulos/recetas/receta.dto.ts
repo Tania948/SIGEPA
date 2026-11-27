@@ -29,17 +29,18 @@ export class RecetaDto {
   @IsOptional() @IsIn(DIFICULTADES) dificultad?: string;
   @IsOptional() @IsIn(TIPOS_PLATILLO) tipoPlatillo?: string;
   @IsOptional() @IsString() @MaxLength(60) region?: string;
-  @IsOptional() @IsString() @MaxLength(80) localidad?: string;
+  @IsString() @MinLength(2, { message: 'Escribe la localidad de origen.' }) @MaxLength(80) localidad: string;
+  /** Solo informativo: el nombre oficial sale del catálogo municipio. */
   @IsOptional() @IsString() @MaxLength(80) municipio?: string;
-  /** Clave geoestadística INEGI del municipio (5 dígitos, p. ej. 20068). */
-  @IsOptional() @Matches(/^\d{5}$/) cveMun?: string;
+  /** Clave geoestadística INEGI del municipio (5 dígitos, p. ej. 20068). Llave foránea a municipio. */
+  @Matches(/^\d{5}$/, { message: 'Elige el municipio de origen.' }) cveMun: string;
   @IsOptional() @IsNumber() @Min(14) @Max(33) latitud?: number;
   @IsOptional() @IsNumber() @Min(-119) @Max(-86) longitud?: number;
   @IsOptional() @IsString() @MaxLength(600) consejo?: string;
   @IsOptional() @IsString() @MaxLength(2000) historia?: string;
   /** Nombre del platillo en su lengua originaria y la lengua (p. ej. "Tikin xiik'", "Maya yucateco"). */
   @IsOptional() @IsString() @MaxLength(60) nombreLengua?: string;
-  @IsOptional() @IsString() @MaxLength(30) lengua?: string;
+  @IsOptional() @IsString() @MaxLength(40) lengua?: string;
   @IsOptional() @IsIn(Object.keys(LICENCIAS)) licencia?: string;
   /** La persona declara que su comunidad está de acuerdo en compartir el saber. */
   @IsBoolean() @Equals(true, { message: 'Confirma que tu comunidad está de acuerdo en compartir esta receta.' })

@@ -6,6 +6,7 @@ import { IDIOMAS, aplicarIdioma, idiomaActual } from "../nucleo/idioma.js";
 import { montarAsistente } from "./asistente.js";
 import { activarRespaldoFotos, pintarFotosFijas } from "../nucleo/fotos.js";
 import { registrarPwa } from "../nucleo/pwa.js";
+import { favoritos } from "../nucleo/local.js";
 
 const opcionesIdioma = () => Object.entries(IDIOMAS).map(([clave, i]) =>
   `<button type="button" class="idioma__opcion" data-idioma="${clave}" lang="${clave}" aria-pressed="${clave === idiomaActual()}">${i.nombre}</button>`).join("");
@@ -134,6 +135,7 @@ export function montarLayout(activa) {
   activarRespaldoFotos();
   pintarFotosFijas();
   registrarPwa();
+  favoritos.sincronizar();
 
   const menu = document.querySelector("[data-menu]");
   const cortina = document.querySelector("[data-cortina]");

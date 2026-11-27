@@ -52,7 +52,7 @@ function filaIngrediente(i = {}) {
   div.innerHTML = `
     <div class="entrada entrada--compacta"><input aria-label="Cantidad" data-cantidad maxlength="15" value="${esc(i.cantidad ?? "")}" placeholder="200"></div>
     <div class="entrada entrada--compacta"><select aria-label="Unidad" data-unidad>
-      ${unidades.map((x) => `<option${x === (i.unidad || "g") ? " selected" : ""}>${esc(x)}</option>`).join("")}
+      ${unidades.map((x) => `<option${x === (i.unidad || (/gusto/i.test(i.cantidad ?? "") ? "—" : "g")) ? " selected" : ""}>${esc(x)}</option>`).join("")}
     </select>${icon("chevron-down", 14)}</div>
     <div class="entrada entrada--compacta"><input aria-label="Ingrediente" data-nombre maxlength="80" value="${esc(i.nombre ?? "")}" placeholder="guías tiernas de calabaza"></div>
     <button class="btn-basura" type="button" data-quitar aria-label="Quitar ingrediente">${icon("trash-2", 18)}</button>`;
@@ -331,6 +331,10 @@ if (hayDictado) document.querySelectorAll("[data-ayuda-dictado]").forEach((e) =>
 /* ---------- Inicio ---------- */
 (async () => {
   estados = await api("/estados").catch(() => []);
+  // Lenguas del catálogo lengua de la base
+  api("/recetas/catalogos").then((c) => {
+    if (c.lenguas?.length) $("#lenguas").innerHTML = c.lenguas.map((l) => `<option value="${esc(l)}">`).join("");
+  }).catch(() => {});
   form.idEstado.insertAdjacentHTML("beforeend", estados.map((e) => `<option value="${e.idEstado}">${esc(e.nomEstado)}</option>`).join(""));
   let datos = { idEstado: Number(parametro("estado")) || undefined };
   if (idBorrador && borradores.obtener(idBorrador)) {

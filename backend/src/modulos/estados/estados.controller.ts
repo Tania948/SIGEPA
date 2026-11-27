@@ -8,14 +8,12 @@ import { RecetasService } from '../recetas/recetas.service';
 export class EstadosController {
   constructor(@InjectRepository(Estado) private estados: Repository<Estado>, private recetas: RecetasService) {}
 
-  /** Catálogo de estados con el número de recetas validadas (vista del mapa). */
+  /** Catálogo de estados con el número de recetas validadas (vista v_recetas_por_estado). */
   @Get()
   async listar() {
-    const filas = await this.estados.createQueryBuilder('e')
-      .leftJoin('e.recetas', 'r', "r.estadoValidacion = 'validada'")
-      .select(['e.idEstado AS idEstado', 'e.nomEstado AS nomEstado'])
-      .addSelect('COUNT(r.idReceta)', 'totalRecetas')
-      .groupBy('e.idEstado').addGroupBy('e.nomEstado').orderBy('e.nomEstado', 'ASC').getRawMany();
+    const filas: Array<{ idEstado: number; nomEstado: string; totalRecetas: number }> = await this.estados.query(
+      'SELECT idEstado, nomEstado, totalRecetas FROM v_recetas_por_estado ORDER BY nomEstado',
+    );
     return filas.map((f) => ({ idEstado: Number(f.idEstado), nomEstado: f.nomEstado, totalRecetas: Number(f.totalRecetas) }));
   }
 
