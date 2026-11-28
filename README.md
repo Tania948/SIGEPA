@@ -1,91 +1,91 @@
 # SIGEPA MX
 
-Sistema Georreferenciado y Participativo para la Preservación y Sustentabilidad del Patrimonio Gastronómico Mexicano.
+**Sistema Georreferenciado y Participativo para la Preservación y Sustentabilidad del Patrimonio Gastronómico Mexicano.**
 Proyecto de Ingeniería de Software, ESCOM-IPN.
 
-## Estructura
+SIGEPA no es solo un recetario: cada receta está ubicada en su municipio, la publica una persona portadora de
+saberes de su comunidad, pasa por moderación y se comparte con una licencia que ella elige.
 
+## Qué hace
+
+- **Mapa de México** con los 32 estados y 2,475 municipios (INEGI) y las recetas ubicadas en cada uno.
+- **Búsqueda** por nombre, ingrediente, estado, municipio, región, tipo de platillo, dificultad y tiempo.
+- **Publicación participativa:** solo portadores de saberes publican; un moderador valida antes de que aparezca.
+  Al publicar se pide consentimiento informado y se elige la licencia (saber comunitario o CC BY-NC-SA).
+- **Asistente** sin servicios externos: "tengo 200 pesos para 4 personas", "¿dónde se recolecta la hierba santa?".
+- **Costo estimado** de cada receta con precios de referencia (Profeco/SNIIM 2026).
+- **Calendario de temporada:** qué ingredientes hay cada mes en cada estado y qué recetas los usan.
+- **Modo cocina:** pasos en pantalla completa, lectura en voz alta, temporizadores detectados en el texto,
+  comandos de voz ("siguiente", "repite") y pantalla siempre encendida.
+- **Dictado por voz** al publicar, para quien prefiere contar la receta que escribirla.
+- **Lenguas originarias:** interfaz en español, maya yucateco y náhuatl, y nombre del platillo en su lengua.
+- **Datos abiertos:** todas las recetas validadas en GeoJSON y CSV para investigación.
+- **App instalable (PWA)** que guarda lo visitado y funciona sin conexión.
+- Fotos reales de **Wikimedia Commons** con su crédito y licencia.
+
+## Probarlo en línea
+
+La versión publicada corre en Render con la base en TiDB Cloud. Cómo publicarla: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
+
+## Correrlo en tu computadora
+
+Necesitas **Node.js 20 o más** y **MySQL 8** (o MariaDB).
+
+```bash
+cd backend
+copy .env.example .env     # en Windows (en Mac/Linux: cp .env.example .env)
+# abre .env y pon tu usuario y contraseña de MySQL
+npm install
+npm run build
+npm start
 ```
-database/   Script de MySQL: tablas del diccionario de datos y datos de ejemplo
-backend/    API REST en NestJS + TypeORM; también sirve el front
-frontend/   Front en HTML5, CSS3 y JavaScript (sin frameworks), según el diseño de Figma
-```
 
-## Cómo correrlo
-
-1. **Base de datos.** Ejecuta `database/sigepa_schema.sql` en MySQL 8 (Workbench, o desde terminal):
-   ```bash
-   mysql -u root -p < database/sigepa_schema.sql
-   ```
-2. **API.** En la carpeta `backend`:
-   ```bash
-   cp .env.example .env      # pon tu usuario y contraseña de MySQL
-   npm install
-   npm run build
-   npm start
-   ```
-3. Abre <http://localhost:3000>.
-
-### Tipos de usuario (`usuario.tipoUsu`)
-
-| tipoUsu | Rol | Qué puede hacer |
-|---|---|---|
-| 1 | Administrador | Valida o rechaza recetas y modera comentarios |
-| 2 | Usuario | Explora el mapa, busca, guarda favoritas y comenta |
-| 3 | Portador(a) de saberes | Todo lo anterior y además **publica recetas** de su comunidad |
-
-Al registrarse se elige el rol. Un usuario puede pasar a portador desde "Publicar receta"
-(`POST /api/usuarios/yo/portador`). La API rechaza publicar o subir fotos a quien no sea portador o administrador.
+Abre <http://localhost:3000>. **No hace falta cargar el SQL a mano:** al arrancar, la API crea la base `sigepa`,
+sus tablas y los datos de ejemplo si no existen. Para volver a los datos de ejemplo: `npm run db:reiniciar`.
 
 ### Cuentas de ejemplo (contraseña `Sigepa2026`)
 
 | Correo | Rol |
 |---|---|
-| admin@sigepa.mx | Administrador |
+| admin@sigepa.mx | Moderador |
 | elena.martinez@correo.mx | Portadora de saberes (Oaxaca) |
 | maria.pech@correo.mx | Portadora de saberes (Yucatán) |
-| diego.ramirez@correo.mx | Usuario (no publica) |
-| sofia.mendoza@correo.mx | Usuaria (no publica) |
+| diego.ramirez@correo.mx | Usuario |
 
-La base trae **68 recetas** de los 32 estados, compartidas por 18 portadores de saberes, cada una con municipio,
-localidad y coordenadas.
+La base trae **68 recetas** de los 32 estados (67 validadas y 1 en revisión), de 18 portadores de saberes, con
+327 ingredientes y 208 pasos.
 
-Las recetas nuevas quedan **en revisión** (`estadoValidacion = 'pendiente'`) hasta que un administrador las valida
-(`PATCH /api/recetas/:id/validacion`). Solo las recetas validadas aparecen en el mapa y en las búsquedas.
+## Estructura
 
-**Recuperar contraseña:** el prototipo no envía correos. Al solicitar la recuperación, el enlace para restablecer
-la contraseña aparece en la consola donde corre `npm start`.
+```
+backend/            API REST en NestJS + TypeORM; también sirve el front
+  src/config/         variables de entorno
+  src/database/       entidades TypeORM (una por tabla), conexión y creación automática
+  src/common/         sesión JWT y guardias por rol
+  src/dominio/        lógica pura: precios, costos, temporadas (con pruebas)
+  src/modulos/        auth, usuarios, favoritos, recetas, comentarios, estados, archivos,
+                      asistente, temporadas, datos-abiertos, salud
+frontend/           HTML5, CSS3 y JavaScript (módulos ES, sin frameworks)
+  js/nucleo/          API, idiomas, fotos, PWA
+  js/componentes/     encabezado, tarjetas, mapa, asistente, modo cocina, dictado
+  js/paginas/         un archivo por pantalla
+database/           esquema.sql (12 tablas, vistas) y datos.sql (catálogos y datos de ejemplo)
+docs/               base de datos, arquitectura, despliegue y mantenimiento
+render.yaml         despliegue en Render
+```
 
-## Mapa
+Más detalle en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md). Para cambios frecuentes (precios, campos nuevos,
+traducciones, fotos): [docs/MANTENIMIENTO.md](docs/MANTENIMIENTO.md).
 
-El mapa usa **Leaflet** (incluido en `frontend/vendor`) con fondos de mapa que no piden llave de API:
-OpenStreetMap (si no responde, cambia solo a las calles de Esri) y una vista satelital de Esri. Las fronteras de los **32 estados y 2,475 municipios** vienen del Marco Geoestadístico de
-INEGI (versión publicada por CONABIO), simplificadas a TopoJSON en `frontend/assets/mapa/`. Los municipios de cada
-estado se cargan solo cuando se elige ese estado. Los fondos de mapa necesitan internet; las fronteras no.
+## Roles (`usuario.tipoUsu`)
 
-## Asistente
+| tipoUsu | Rol | Qué puede hacer |
+|---|---|---|
+| 1 | Moderador | Valida o rechaza recetas y modera comentarios |
+| 2 | Usuario | Explora el mapa, busca, guarda favoritas y comenta |
+| 3 | Portador(a) de saberes | Todo lo anterior y además **publica recetas** de su comunidad |
 
-El botón **Asistente** (abajo a la derecha, en todas las pantallas) abre un chat que responde con datos de SIGEPA y
-los muestra en un mapa pequeño:
-
-- **Presupuesto:** "tengo 200 pesos para 4 personas" → recetas que alcanzan, la que mejor aprovecha el dinero y su
-  lista de compras con costo estimado.
-- **Origen y recolección:** "¿dónde se recolecta la hierba santa?", "¿qué se recolecta en Oaxaca en esta temporada?"
-  → estados resaltados en el mapa, temporada y recomendaciones para recolectar de forma responsable.
-- **Recetas:** por estado, ingrediente, tipo de platillo o tiempo ("recetas rápidas de Yucatán").
-
-Los precios y el origen de los ingredientes están en `backend/src/asistente/ingredientes.ts`. Los precios son
-**referencias aproximadas** basadas en los monitoreos de Profeco y el SNIIM de 2026. Hay que actualizarlos de vez en cuando.
-
-Funciona sin servicios externos. Si en `backend/.env` pones `ANTHROPIC_API_KEY`, además redacta las respuestas con
-Claude usando solo esos mismos datos. Si la llamada falla, responde con el texto local.
-
-## Idiomas
-
-El selector de la barra superior (y del menú lateral) cambia la interfaz a **maya yucateco (Maaya t'aan)** o
-**náhuatl (Nawatlahtolli)**. Los textos están en `frontend/js/idioma.js`, un diccionario de frases
-`[español, maya, náhuatl]`. Las traducciones son una **primera versión que debe revisar un hablante de cada lengua**.
-El contenido de las recetas no se traduce: se muestra en la lengua en que lo escribió su portador.
+Los roles están en el catálogo `tipo_usuario`. Un usuario puede pasar a portador desde "Publicar receta".
 
 ## API
 
@@ -93,37 +93,43 @@ El contenido de las recetas no se traduce: se muestra en la lengua en que lo esc
 |---|---|---|
 | POST | `/api/auth/registro` | Crear cuenta |
 | POST | `/api/auth/login` | Iniciar sesión (devuelve token JWT) |
-| POST | `/api/auth/recuperar` | Solicitar enlace de recuperación |
-| GET / POST | `/api/auth/restablecer[/:token]` | Validar el enlace y guardar la nueva contraseña |
-| GET | `/api/estados` | Estados con número de recetas validadas |
-| GET | `/api/estados/:id` | Detalle de un estado y sus regiones |
-| GET | `/api/recetas?q=&nombre=&ing=&ingModo=&estado=&mun=&region=&tipo=&dificultad=&tiempo=&tiempoMax=&conFoto=&orden=&page=` | Búsqueda (`mun` = clave INEGI del municipio) |
-| GET | `/api/recetas/mapa` | Puntos de las recetas validadas para el mapa |
-| GET | `/api/recetas/regiones?estado=` | Regiones registradas en recetas |
+| GET | `/api/auth/yo` | Sesión actual |
+| GET | `/api/estados`, `/api/estados/:id` | Estados con número de recetas validadas |
+| GET | `/api/recetas?q=&ing=&estado=&mun=&region=&tipo=&dificultad=&tiempoMax=&orden=&page=` | Búsqueda |
+| GET | `/api/recetas/mapa`, `/api/recetas/regiones` | Puntos del mapa y regiones |
 | GET | `/api/recetas/:id` | Detalle de una receta |
+| GET | `/api/recetas/:id/costo?personas=` | Costo estimado de los ingredientes |
 | POST / PUT / DELETE | `/api/recetas[/:id]` | Publicar, editar o borrar una receta propia (portador) |
-| GET | `/api/recetas/pendientes` | Recetas por validar (administrador) |
-| PATCH | `/api/recetas/:id/validacion` | Validar o rechazar (administrador) |
+| GET | `/api/recetas/pendientes` | Recetas por validar (moderador) |
+| PATCH | `/api/recetas/:id/validacion` | Validar o rechazar (moderador) |
 | GET / POST | `/api/recetas/:id/comentarios` | Comentarios |
-| POST | `/api/asistente` | Pregunta al asistente (`{ mensaje, historial? }`) |
-| GET | `/api/usuarios/:id` | Perfil público |
+| PATCH / DELETE | `/api/comentarios/:id` | Moderar o borrar un comentario |
+| POST | `/api/asistente` | Pregunta al asistente (`{ mensaje }`) |
+| GET | `/api/temporadas?mes=&estado=` | Ingredientes en temporada |
+| GET | `/api/datos-abiertos/recetas.geojson`, `.../recetas.csv` | Datos abiertos |
+| GET / PATCH | `/api/usuarios/:id`, `/api/usuarios/yo` | Perfil público y editar el propio |
+| GET / PUT / DELETE | `/api/usuarios/yo/favoritos[/:idReceta]` | Mis favoritos (tabla `favorito`) |
 | GET | `/api/usuarios/yo/recetas` | Mis aportes |
-| PATCH | `/api/usuarios/yo` | Editar mi perfil |
-| POST | `/api/usuarios/yo/portador` | Pasar de usuario a portador de saberes |
+| POST | `/api/usuarios/yo/portador` | Pasar a portador de saberes |
 | POST | `/api/uploads` | Subir fotografía (campo `foto`) |
+| GET | `/api/salud` | Estado del servicio y de la base |
 
 ## Base de datos
 
-El script sigue el **Diccionario de datos (10.2)**: tablas `usuario`, `receta`, `estado` y `comentario` con los mismos
-campos, tipos y longitudes. La única columna adicional es `receta.urlImagen`, que el **Modelo E-R (10.1)** define como
-`url_imagen`.
+Modelo relacional en **tercera forma normal** con 12 tablas: catálogos (`tipo_usuario`, `estado`, `municipio` con los
+2,475 municipios del INEGI, `region`, `lengua`, `ingrediente`), entidades (`usuario`, `receta`), dependientes
+(`paso`, `comentario`) y asociativas (`receta_ingrediente`, `favorito`), más dos vistas. Llaves primarias y foráneas
+con acciones referenciales, restricciones CHECK y UNIQUE, índices y transacciones.
 
-Los datos que pide el diseño y que no tienen columna propia se guardan así:
+Diccionario de datos, diagrama E-R, justificación de las formas normales y reglas de integridad:
+**[docs/BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md)** (imagen del E-R en `docs/img/modelo-er.png`).
 
-| Dato del diseño | Dónde se guarda |
-|---|---|
-| Ingredientes con cantidad y unidad | `receta.ingredientes` (TEXT) como JSON |
-| Pasos, porciones, tiempo total, dificultad, tipo de platillo, región, municipio (nombre y clave INEGI), localidad, latitud/longitud, consejo e historia | `receta.preparacion` (TEXT) como JSON |
-| Zona y texto de presentación de cada estado | `frontend/js/catalogos.js` (contenido fijo) |
-| Favoritos y borradores | En el navegador de cada usuario (`localStorage`) |
-| Foto de perfil, biografía | No se guardan; el perfil muestra las iniciales |
+Si tienes una base creada con una versión anterior del proyecto, la API te avisará al arrancar: ejecuta
+`npm run db:reiniciar` en `backend` para crear las tablas nuevas.
+
+## Créditos
+
+- Fronteras: Marco Geoestadístico de INEGI (versión de CONABIO). Mapas: © OpenStreetMap y Esri.
+- Fotografías: Wikimedia Commons, con autor y licencia en la página **Créditos** del sitio.
+- Tipografías Inter y Lora (SIL Open Font License), incluidas en `frontend/assets/fuentes`.
+- Las traducciones al maya y al náhuatl son una primera versión que deben revisar hablantes de cada lengua.

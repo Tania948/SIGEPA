@@ -1,0 +1,31 @@
+# Despliegue en Render con un clic (Blueprint). Ver docs/DESPLIEGUE.md.
+# La API de NestJS sirve también el front, así que es un solo servicio web.
+services:
+  - type: web
+    name: sigepa
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm ci --include=dev && npm run build
+    startCommand: cd backend && node dist/main.js
+    healthCheckPath: /api/salud
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Datos de conexión de TiDB Cloud (botón "Connect" de tu instancia).
+      # Render los pide al crear el servicio.
+      - key: DB_HOST
+        sync: false   # p. ej. gateway01.us-east-1.prod.aws.tidbcloud.com
+      - key: DB_USER
+        sync: false   # p. ej. 2abc3XYZ.root
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_NAME
+        value: sigepa
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
