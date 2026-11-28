@@ -42,14 +42,14 @@ export function contiene(geom, lng, lat) {
 function capasBase() {
   // Ninguna de estas capas pide llave de API. (CARTO empezó a pedirla y mostraba "API KEY REQUIRED".)
   const calles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
+    maxZoom: 19, referrerPolicy: "strict-origin-when-cross-origin",
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Límites: INEGI',
   });
   const callesEsri = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 18, attribution: "Mapa &copy; Esri · Límites: INEGI",
+    maxZoom: 18, referrerPolicy: "strict-origin-when-cross-origin", attribution: "Mapa &copy; Esri · Límites: INEGI",
   });
   const satelite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 18, attribution: "Imágenes &copy; Esri · Límites: INEGI",
+    maxZoom: 18, referrerPolicy: "strict-origin-when-cross-origin", attribution: "Imágenes &copy; Esri · Límites: INEGI",
   });
   return { Mapa: calles, "Calles (Esri)": callesEsri, "Satélite": satelite };
 }

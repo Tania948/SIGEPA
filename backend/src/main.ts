@@ -35,13 +35,17 @@ async function arrancar() {
         'script-src': ["'self'"],
         'style-src': ["'self'", "'unsafe-inline'"], // Leaflet posiciona el mapa con estilos en línea
         'img-src': ["'self'", 'data:', 'blob:', ...IMAGENES_EXTERNAS],
-        'connect-src': ["'self'"],
+        // El service worker descarga y guarda las fotos de Wikimedia para verlas sin conexión.
+        'connect-src': ["'self'", 'https://upload.wikimedia.org'],
         'font-src': ["'self'", 'data:'],
         'worker-src': ["'self'"],
         'upgrade-insecure-requests': produccion ? [] : null,
       },
     },
     crossOriginEmbedderPolicy: false,
+    // OpenStreetMap y Wikimedia exigen el encabezado Referer: sin él bloquean mosaicos («Access blocked»)
+    // y fotos (429). Con esta política solo se envía el dominio (sigepa.onrender.com), nunca la ruta.
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     hsts: produccion,
   }));
   app.use(compression());
