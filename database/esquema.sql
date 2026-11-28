@@ -32,8 +32,9 @@ CREATE TABLE tipo_usuario (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 -- Entidades federativas. idEstado = clave de entidad del INEGI (1 a 32).
--- Las claves INEGI no cambian, por eso las llaves foráneas hacia estado usan ON UPDATE RESTRICT
--- (además, MySQL no permite acciones referenciales sobre columnas que usa un CHECK).
+-- Las claves INEGI no cambian, por eso las llaves foráneas hacia estado usan ON UPDATE RESTRICT.
+-- Ningún CHECK usa columnas de llaves foráneas: MySQL y TiDB no lo permiten cuando la llave
+-- declara una acción referencial (ON UPDATE / ON DELETE).
 CREATE TABLE estado (
   idEstado   TINYINT      NOT NULL,
   nomEstado  VARCHAR(20)  NOT NULL,
@@ -51,9 +52,9 @@ CREATE TABLE municipio (
   CONSTRAINT pk_municipio PRIMARY KEY (cveMun),
   CONSTRAINT fk_municipio_estado FOREIGN KEY (idEstado)
     REFERENCES estado (idEstado) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  -- Los dos primeros dígitos de la clave deben ser la entidad a la que pertenece.
-  CONSTRAINT ck_municipio_clave CHECK (cveMun REGEXP '^[0-9]{5}$'
-    AND CAST(SUBSTRING(cveMun, 1, 2) AS UNSIGNED) = idEstado)
+  -- Clave de 5 dígitos. Que los dos primeros coincidan con idEstado lo garantizan los datos del
+  -- INEGI (datos.sql); no se valida aquí porque idEstado forma parte de una llave foránea.
+  CONSTRAINT ck_municipio_clave CHECK (cveMun REGEXP '^[0-9]{5}$')
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 CREATE INDEX ix_municipio_estado ON municipio (idEstado);
 
