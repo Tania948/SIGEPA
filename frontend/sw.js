@@ -3,7 +3,7 @@
 //
 // Mantenimiento: cambia VERSION en cada despliegue que modifique archivos del front;
 // así los navegadores descartan la copia anterior.
-const VERSION = "sigepa-2026-11-27";
+const VERSION = "sigepa-2026-11-27b";
 const BASE = [
   "/", "/index.html", "/recetas.html", "/receta.html", "/temporadas.html", "/sin-conexion.html",
   "/css/styles.css", "/css/fuentes.css", "/assets/img/logo-sigepa.png", "/assets/img/icono-192.png",
@@ -50,14 +50,16 @@ async function fotoExterna(req) {
   const guardada = await cache.match(req);
   if (guardada) return guardada;
   try {
-    const res = await fetch(req);
-    if (res.ok || res.type === "opaque") {
+    // Wikimedia permite CORS, así que se pide en modo "cors" para conocer el estado real de la respuesta
+    // y guardar solo las fotos que llegaron bien (antes se guardaban también los errores).
+    const res = await fetch(req.url, { mode: "cors", credentials: "omit", referrerPolicy: "strict-origin-when-cross-origin" });
+    if (res.ok) {
       cache.put(req, res.clone());
       cache.keys().then((k) => k.length > MAX_FOTOS && cache.delete(k[0]));
     }
     return res;
   } catch {
-    return Response.error();
+    return fetch(req).catch(() => Response.error());
   }
 }
 
